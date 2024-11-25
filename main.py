@@ -8,9 +8,10 @@ from resources import ResourceManager
 class Game:
     def __init__(self):
         pygame.init()
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.resources = ResourceManager()
         self.running = True
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
         self.clock = pygame.time.Clock()
         self.states = {}
         self.current_state = None

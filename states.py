@@ -1,5 +1,10 @@
+import random
+
 import pygame
+import pygame.time
+
 from settings import WIDTH, HEIGHT
+from random import shuffle, choice, randint
 
 
 class State:
@@ -70,26 +75,77 @@ class GetReadyState(State):
 
 class GamePlayState(State):
 
-    def __init__(self):
-        self.game_box = self.game.resources.images["geme_box"]
+    def __init__(self, game):
+        super().__init__(game)
+        self.game_box = self.game.resources.images["game_box"]
+        self.game_box_rect = self.game_box.get_rect(center=(WIDTH / 2, HEIGHT / 2))
+        self.font = self.game.resources.fonts["main"]
+
+        # Game logic variables
+        self.num_count = 0
+        self.num_per_round = 0
+        self.current_number = None
+        self.current_coord = None
+        self.coordinates_list = []
+        self.coord_index = 0
+        self.display_number_time = 1000
+        self.last_number_time = pygame.time.get_ticks()
+
+        #Initialize shuffled coordinates
+        self.shuffle_coordinates()
+
+
+    def shuffle_coordinates(self):
+        self.coordinates_list = list(self.game.resources.tablet_coords.values())
+        random.shuffle(self.coordinates_list)
+        self.coord_index = 0 # Resets index to start from beginning
+
 
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_g:
-                    print("Store 'position' click press in list?")
+                    #Add logic to update lists which record the player's inputs
+                    pass
                 elif event.key == pygame.K_j:
-                    print("Store 'number' press in list")
+                    #Add logic to update lists which record the player's inputs
+                    pass
 
     def update(self, dt):
-        pass
+        """Update the game logic"""
+
+        current_time = pygame.time.get_ticks()
+
+        if self.num_count >= self.num_per_round and self.current_number is None:
+            #All coordinates have used; transition to another state
+            self.game.current_state = self.game.states["FinishState"]
+        else:
+            if self.current_number in None:
+                if current_time - self.last_number_time >= self.display_number_time:
+                    # Get the next coordinate from the shuffled list
+                    if self.coord_index < len(self.coordinates_list):
+                        self.current_coord = self.coordinates_list[self.coord_index]
+                        self.coord_index += 1
+                    else:
+                        # Reset if necessary (e.g., for a new round)
+                        self.shuffle_coordinates()
+                        self.current_coord = self.coordinates_list[self.coord_index]
+                        self.coord_index += 1
+
+                    # Generate random number
+                    self.current_number = random.randint(1, 9)
+                    self.num_count += 1
+                    self.last_number_time = current_time
 
     def render(self, screen):
         screen.fill((5, 13, 55))
-        game_box_surf = self.game_box
-        game_box_rect = game_box_surf.get_rect(center= (WIDTH / 2, HEIGHT / 2))
-        screen.blit(game_box_surf, game_box_rect)
+        screen.blit(self.game_box, self.game_box_rect)
 
+        # Render the current number at the selected coordinate
+        if self.current_number is not None and self.current_coord is not None:
+            rand_num_surf = self.font.render(str(self.current_number), True, (233, 144, 89))
+            rand_num_surf_rect = rand_num_surf.get_rect(center=self.current_coord)
+            screen.blit(rand_num_surf, rand_num_surf_rect)
 
 
 class FinishState(State):
@@ -97,10 +153,10 @@ class FinishState(State):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_y:
-                    print("play again")
-                else:
-                    self.running = False
-        pass
+                    self.game.current_state = self.game.states["IntroState"]
+                elif event.key == pygame.K_q:
+                    self.game.running = False
+
 
     def update(self, dt):
         pass

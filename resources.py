@@ -1,5 +1,6 @@
 import pygame
 
+
 class ResourceManager:
 
     def __init__(self):
@@ -31,4 +32,27 @@ class ResourceManager:
         self.fonts = {
             "main": pygame.font.Font("assets/fonts/Poppins-ExtraBold.ttf", 32),
             "menu": pygame.font.Font("assets/fonts/Poppins-ExtraBold.ttf", 12)
+        }
+
+        self.tablet_coords = {
+            1: (150, 155),
+            2: (400, 155),
+            3: (650, 155),
+            4: (150, 405),
+            5: (650, 405),
+            6: (150, 655),
+            7: (400, 655),
+            8: (650, 655),
+        }
+
+        self.instruction_coords = {
+            1: (150, 155),
+            2: (400, 155),
+            3: (650, 155),
+            4: (150, 405),
+            5: (650, 405),
+            6: (150, 680),
+            7: (400, 680),
+            8: (650, 655),
+            9: (400, 400)
         }
