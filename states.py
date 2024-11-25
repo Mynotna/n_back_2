@@ -3,7 +3,7 @@ import random
 import pygame
 import pygame.time
 
-from settings import WIDTH, HEIGHT
+from settings import WIDTH, HEIGHT, COLOR
 from random import shuffle, choice, randint
 
 
@@ -22,9 +22,8 @@ class State:
     def update(self, dt):
         pass
 
-    def render(self):
-        screen.fill((69, 69, 69))
-        pass
+    def render(self, screen):
+        screen.fill((COLOR))
 
 class IntroState(State):
     def __init__(self, game):
@@ -46,7 +45,7 @@ class IntroState(State):
     def render(self, screen):
         screen.blit(self.bg_image, (0, 0))
         text_surface = self.font.render("Welcome to the game, Dwindle", True, (211, 99, 35))
-        text_surface_rect = text_surface.get_rect(center= (WIDTH / 2, HEIGHT / 2))
+        text_surface_rect = text_surface.get_rect(center= (WIDTH / 2, 20))
         screen.blit(text_surface, text_surface_rect)
 
 class GetReadyState(State):
@@ -63,7 +62,6 @@ class GetReadyState(State):
         if current_time - self.start_time >= self.delay:
             # Transition to0 Gameplay state
             self.game.current_state = self.game.states["GamePlayState"]
-        pass
 
     def render(self, screen):
         screen.fill((0, 90, 13))
@@ -80,13 +78,16 @@ class GamePlayState(State):
         self.game_box = self.game.resources.images["game_box"]
         self.game_box_rect = self.game_box.get_rect(center=(WIDTH / 2, HEIGHT / 2))
         self.font = self.game.resources.fonts["main"]
+        self.tablet_coords = game.resources.tablet_coords
+
+        # Convert coords to list
+        self.tab_coords_list = list(self.tablet_coords.values())
 
         # Game logic variables
         self.num_count = 0
-        self.num_per_round = 0
+        self.num_per_round = 10
         self.current_number = None
         self.current_coord = None
-        self.coordinates_list = []
         self.coord_index = 0
         self.display_number_time = 1000
         self.last_number_time = pygame.time.get_ticks()
@@ -96,8 +97,7 @@ class GamePlayState(State):
 
 
     def shuffle_coordinates(self):
-        self.coordinates_list = list(self.game.resources.tablet_coords.values())
-        random.shuffle(self.coordinates_list)
+        random.shuffle(self.tab_coords_list)
         self.coord_index = 0 # Resets index to start from beginning
 
 
@@ -117,25 +117,33 @@ class GamePlayState(State):
         current_time = pygame.time.get_ticks()
 
         if self.num_count >= self.num_per_round and self.current_number is None:
-            #All coordinates have used; transition to another state
+            #All coordinates have been used; transition to another state
             self.game.current_state = self.game.states["FinishState"]
-        else:
-            if self.current_number in None:
-                if current_time - self.last_number_time >= self.display_number_time:
-                    # Get the next coordinate from the shuffled list
-                    if self.coord_index < len(self.coordinates_list):
-                        self.current_coord = self.coordinates_list[self.coord_index]
-                        self.coord_index += 1
-                    else:
-                        # Reset if necessary (e.g., for a new round)
-                        self.shuffle_coordinates()
-                        self.current_coord = self.coordinates_list[self.coord_index]
-                        self.coord_index += 1
+            return
 
-                    # Generate random number
-                    self.current_number = random.randint(1, 9)
-                    self.num_count += 1
-                    self.last_number_time = current_time
+
+        if self.current_number is None:
+            if current_time - self.last_number_time >= self.display_number_time:
+                # Get the next coordinate from the shuffled list
+                if self.coord_index < len(self.tab_coords_list):
+                    self.current_coord = self.tab_coords_list[self.coord_index]
+                    self.coord_index += 1
+                else:
+                    # Reset if necessary (e.g., for a new round)
+                    self.shuffle_coordinates()
+                    self.current_coord = self.tab_coords_list[self.coord_index]
+                    self.coord_index += 1
+
+                # Generate random number
+                self.current_number = random.randint(1, 9)
+                self.num_count += 1
+                self.last_number_time = current_time
+
+        else:
+            #Clear the current number and coordinate
+            if current_time - self.last_number_time >= self.display_number_time:
+                self.current_number = None
+                self.current_coord = None
 
     def render(self, screen):
         screen.fill((5, 13, 55))
@@ -147,8 +155,13 @@ class GamePlayState(State):
             rand_num_surf_rect = rand_num_surf.get_rect(center=self.current_coord)
             screen.blit(rand_num_surf, rand_num_surf_rect)
 
-
 class FinishState(State):
+    def __init__(self, game):
+        super().__init__(game)
+        self.start_time = pygame.time.get_ticks()
+        self.play_again_delay = 2000 # Second delay
+        self.show_play_again_text = False
+
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN:
@@ -159,14 +172,22 @@ class FinishState(State):
 
 
     def update(self, dt):
-        pass
+        current_time = pygame.time.get_ticks()
+        if current_time - self.start_time  >= self.play_again_delay:
+            self.show_play_again_text = True
 
     def render(self, screen):
         screen.fill((55, 233, 21))
         font = self.game.resources.fonts["menu"]
+
         text_surf = font.render("All over, Dwindle", True, (101, 78, 134))
         text_surf_rect = text_surf.get_rect(center= (WIDTH /2, HEIGHT / 2))
         screen.blit(text_surf, text_surf_rect)
+
+        if self.show_play_again_text:
+            play_again_surf = font.render("Play again, Dwindle? Y or N?", True, (101, 78, 134))
+            play_again_surf_rect = play_again_surf.get_rect(center= (WIDTH /2, 420))
+            screen.blit(play_again_surf, play_again_surf_rect)
 
 
 
