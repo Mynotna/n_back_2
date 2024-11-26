@@ -33,22 +33,49 @@ class IntroState(State):
 
         #Access resources
         self.bg_image = self.game.resources.images["intro_bg"]
-        self.font = self.game.resources.fonts["main"]
+        self.font = self.game.resources.fonts["menu"]
+
+        # Define start button
+        self.button_colour = (89, 233, 89)
+        self.button_rect = pygame.Rect(0, 0, 150, 50)
+        self.button_rect.center = (WIDTH /2, HEIGHT /2)
+
+        # Define Instructions button
+        self.instruction_btn_col = (34, 89, 34)
+        self.instruction_btn_rect = pygame.Rect(0, 0, 175, 63)
+        self.instruction_btn_rect.center = (game.resources.tablet_coords[1])
 
     def handle_events(self, events):
         super().handle_events(events)
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
-                self.game.current_state = self.game.states["GetReadyState"]
+                if self.button_rect.collidepoint(event.pos):
+                    self.game.current_state = self.game.states["GetReadyState"]
+                elif self.instruction_btn_rect.collidepoint(event.pos):
+                    pass
 
     def update(self, dt):
         pass
 
     def render(self, screen):
         screen.blit(self.bg_image, (0, 0))
-        text_surface = self.font.render("Welcome to the game, Dwindle", True, (211, 99, 35))
+        text_surface = self.font.render("Welcome to n-back", True, (211, 99, 35))
         text_surface_rect = text_surface.get_rect(center= (WIDTH / 2, 20))
         screen.blit(text_surface, text_surface_rect)
+
+        # Start button rect & text
+        pygame.draw.rect(screen, self.button_colour, self.button_rect)
+        start_btn_surf = self.game.resources.fonts["btn_1"].render("s t a r t", True, (233, 89, 233))
+        start_btn_surf_rect = start_btn_surf.get_rect(center= (WIDTH /2, HEIGHT /2))
+        screen.blit(start_btn_surf, start_btn_surf_rect)
+
+        # Blit Instructions button
+        pygame.draw.rect(screen, self.instruction_btn_col, self.instruction_btn_rect)
+        #instruction_btn_surf = self.font["btn_1"].render("Instructions", True, (144, 89, 233))
+        instruction_btn_surf = self.game.resources.fonts["btn_1"].render("Instructions?", True, (144, 89, 233))
+        instruction_btn_rect = instruction_btn_surf.get_rect(center= (self.game.resources.tablet_coords[1]))
+        screen.blit(instruction_btn_surf, instruction_btn_rect)
+
 
 class GetReadyState(State):
     def __init__(self, game):
@@ -181,7 +208,7 @@ class FinishState(State):
                 if event.key == pygame.K_y:
                     self.game.states["GamePlayState"].reset()
                     self.game.current_state = self.game.states["IntroState"]
-                elif event.key == pygame.K_q:
+                elif event.key == pygame.K_n:
                     self.game.running = False
 
 
@@ -200,7 +227,7 @@ class FinishState(State):
 
         if self.show_play_again_text:
             play_again_surf = font.render("Play again, Dwindle? Y or N?", True, (101, 78, 134))
-            play_again_surf_rect = play_again_surf.get_rect(center= (WIDTH /2, 420))
+            play_again_surf_rect = play_again_surf.get_rect(center= (WIDTH /2, 455))
             screen.blit(play_again_surf, play_again_surf_rect)
 
 

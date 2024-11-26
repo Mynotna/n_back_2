@@ -30,8 +30,9 @@ class ResourceManager:
         }
 
         self.fonts = {
-            "main": pygame.font.Font("assets/fonts/Poppins-ExtraBold.ttf", 32),
-            "menu": pygame.font.Font("assets/fonts/Poppins-ExtraBold.ttf", 12)
+            "main": pygame.font.Font("assets/fonts/Poppins-ExtraBold.ttf", 89),
+            "menu": pygame.font.Font("assets/fonts/Poppins-ExtraBold.ttf", 34),
+            "btn_1": pygame.font.Font("assets/fonts/Poppins-ExtraBold.ttf", 21)
         }
 
         self.tablet_coords = {
