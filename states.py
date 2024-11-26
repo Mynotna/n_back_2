@@ -2,6 +2,7 @@ import random
 
 import pygame
 import pygame.time
+import pygame.mixer
 
 from settings import WIDTH, HEIGHT, COLOR
 from random import shuffle, choice, randint
@@ -10,6 +11,7 @@ from random import shuffle, choice, randint
 class State:
     def __init__(self, game):
         self.game = game
+
 
     def handle_events(self, events):
         for event in events:
@@ -52,7 +54,7 @@ class GetReadyState(State):
     def __init__(self, game):
         super().__init__(game)
         self.start_time = pygame.time.get_ticks()
-        self.delay = 2000
+        self.delay = 5000
 
     def handle_events(self, events):
         pass
@@ -80,10 +82,25 @@ class GamePlayState(State):
         self.font = self.game.resources.fonts["main"]
         self.tablet_coords = game.resources.tablet_coords
 
+        #Get up audio files
+        self.audio_files = game.resources.sounds
+
         # Convert coords to list
         self.tab_coords_list = list(self.tablet_coords.values())
 
-        # Game logic variables
+        # Initialize shuffled coordinates
+        self.shuffle_coordinates()
+
+        # Call reset to initialize game logic variables
+        self.reset()
+
+
+    def shuffle_coordinates(self):
+        random.shuffle(self.tab_coords_list)
+        self.coord_index = 0 # Resets index to start from beginning
+
+    def reset(self):
+        """Reset the game logic for a new round."""
         self.num_count = 0
         self.num_per_round = 10
         self.current_number = None
@@ -91,14 +108,7 @@ class GamePlayState(State):
         self.coord_index = 0
         self.display_number_time = 1000
         self.last_number_time = pygame.time.get_ticks()
-
-        #Initialize shuffled coordinates
         self.shuffle_coordinates()
-
-
-    def shuffle_coordinates(self):
-        random.shuffle(self.tab_coords_list)
-        self.coord_index = 0 # Resets index to start from beginning
 
 
     def handle_events(self, events):
@@ -121,7 +131,6 @@ class GamePlayState(State):
             self.game.current_state = self.game.states["FinishState"]
             return
 
-
         if self.current_number is None:
             if current_time - self.last_number_time >= self.display_number_time:
                 # Get the next coordinate from the shuffled list
@@ -138,6 +147,10 @@ class GamePlayState(State):
                 self.current_number = random.randint(1, 9)
                 self.num_count += 1
                 self.last_number_time = current_time
+
+                # Play audio files matching the numbers
+                if self.current_number in self.audio_files:
+                    self.audio_files[self.current_number].play()
 
         else:
             #Clear the current number and coordinate
@@ -166,6 +179,7 @@ class FinishState(State):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_y:
+                    self.game.states["GamePlayState"].reset()
                     self.game.current_state = self.game.states["IntroState"]
                 elif event.key == pygame.K_q:
                     self.game.running = False
@@ -173,7 +187,7 @@ class FinishState(State):
 
     def update(self, dt):
         current_time = pygame.time.get_ticks()
-        if current_time - self.start_time  >= self.play_again_delay:
+        if current_time - self.start_time >= self.play_again_delay:
             self.show_play_again_text = True
 
     def render(self, screen):

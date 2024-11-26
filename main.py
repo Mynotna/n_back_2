@@ -1,13 +1,15 @@
 import pygame
+import pygame.mixer
 import sys
 from states import State, IntroState, GamePlayState, GetReadyState, FinishState
 from settings import WIDTH, HEIGHT
 from resources import ResourceManager
 
+pygame.mixer.init()
+pygame.init()
 
 class Game:
     def __init__(self):
-        pygame.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.resources = ResourceManager()
         self.running = True

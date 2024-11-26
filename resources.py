@@ -18,15 +18,15 @@ class ResourceManager:
             "instruct_9": pygame.image.load("assets/graphics/instruct_imgs/9_instr.png").convert_alpha()
         }
         self.sounds = {
-            "one": pygame.mixer.Sound("assets/audio/one.wav"),
-            "two": pygame.mixer.Sound("assets/audio/two.wav"),
-            "three": pygame.mixer.Sound("assets/audio/three.wav"),
-            "four": pygame.mixer.Sound("assets/audio/four.wav"),
-            "five": pygame.mixer.Sound("assets/audio/five.wav"),
-            "six": pygame.mixer.Sound("assets/audio/six.wav"),
-            "seven": pygame.mixer.Sound("assets/audio/seven.wav"),
-            "eight": pygame.mixer.Sound("assets/audio/eight.wav"),
-            "nine": pygame.mixer.Sound("assets/audio/nine.wav")
+            1: pygame.mixer.Sound("assets/audio/one.wav"),
+            2: pygame.mixer.Sound("assets/audio/two.wav"),
+            3: pygame.mixer.Sound("assets/audio/three.wav"),
+            4: pygame.mixer.Sound("assets/audio/four.wav"),
+            5: pygame.mixer.Sound("assets/audio/five.wav"),
+            6: pygame.mixer.Sound("assets/audio/six.wav"),
+            7: pygame.mixer.Sound("assets/audio/seven.wav"),
+            8: pygame.mixer.Sound("assets/audio/eight.wav"),
+            9: pygame.mixer.Sound("assets/audio/nine.wav")
         }
 
         self.fonts = {
