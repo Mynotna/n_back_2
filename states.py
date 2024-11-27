@@ -124,7 +124,7 @@ class GamePlayState(State):
         self.font = self.game.resources.fonts["main"]
         self.tablet_coords = game.resources.tablet_coords
 
-        #Get up audio files
+        #Get audio files
         self.audio_files = game.resources.sounds
 
         # Convert coords to list
@@ -132,6 +132,10 @@ class GamePlayState(State):
 
         # Initialize shuffled coordinates
         self.shuffle_coordinates()
+
+        # Initialise round variables
+        self.num_of_rounds = 3
+        self.current_round_num = 0
 
         # Call reset to initialize game logic variables
         self.reset()
@@ -145,11 +149,14 @@ class GamePlayState(State):
         """Reset the game logic for a new round."""
         self.num_count = 0
         self.num_per_round = 10
+
         self.current_number = None
         self.current_coord = None
         self.coord_index = 0
+
         self.display_number_time = 1000
         self.last_number_time = pygame.time.get_ticks()
+
         self.shuffle_coordinates()
 
 
@@ -169,8 +176,13 @@ class GamePlayState(State):
         current_time = pygame.time.get_ticks()
 
         if self.num_count >= self.num_per_round and self.current_number is None:
-            #All coordinates have been used; transition to another state
-            self.game.current_state = self.game.states["FinishState"]
+            if self.current_round_num < self.num_of_rounds -1:
+                # Move to the next round
+                self.current_round_num += 1
+                self.reset()
+            else:
+                # All rounds complete. Move to next round
+                self.game.current_state = self.game.states["FinishState"]
             return
 
         if self.current_number is None:
