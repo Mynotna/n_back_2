@@ -5,17 +5,14 @@ class ResourceManager:
 
     def __init__(self):
         self.images = {
-            "intro_bg": pygame.image.load("assets/graphics/Backgrounds/trans_bg.png").convert_alpha(),
+            "intro_bg": pygame.image.load("assets/graphics/Backgrounds/welcome_scr_1.png").convert_alpha(),
+            "instruct_scr": pygame.image.load("assets/graphics/Backgrounds/Instruct_scr.png").convert_alpha(),
             "game_box": pygame.image.load("assets/graphics/Backgrounds/game_grid.png").convert_alpha(),
-            "instruct_1": pygame.image.load("assets/graphics/instruct_imgs/1_instr.png").convert_alpha(),
-            "instruct_2": pygame.image.load("assets/graphics/instruct_imgs/2_instr.png").convert_alpha(),
-            "instruct_3": pygame.image.load("assets/graphics/instruct_imgs/3_instr.png").convert_alpha(),
-            "instruct_4": pygame.image.load("assets/graphics/instruct_imgs/4_instr.png").convert_alpha(),
-            "instruct_5": pygame.image.load("assets/graphics/instruct_imgs/5_instr.png").convert_alpha(),
-            "instruct_6": pygame.image.load("assets/graphics/instruct_imgs/6_instr.png").convert_alpha(),
-            "instruct_7": pygame.image.load("assets/graphics/instruct_imgs/7_instr.png").convert_alpha(),
-            "instruct_8": pygame.image.load("assets/graphics/instruct_imgs/8_instr.png").convert_alpha(),
-            "instruct_9": pygame.image.load("assets/graphics/instruct_imgs/9_instr.png").convert_alpha()
+            "enter_btn": pygame.image.load("assets/graphics/btns/enter_btn.png").convert_alpha(),
+            "instruct_btn": pygame.image.load("assets/graphics/btns/Instruct_btn_1.png").convert_alpha(),
+            "ct_dwn_1": pygame.image.load("assets/graphics/count_down_nums/1.png").convert_alpha(),
+            "ct_dwn_2": pygame.image.load("assets/graphics/count_down_nums/2.png").convert_alpha(),
+            "ct_dwn_3": pygame.image.load("assets/graphics/count_down_nums/3.png").convert_alpha()
         }
         self.sounds = {
             1: pygame.mixer.Sound("assets/audio/one.wav"),

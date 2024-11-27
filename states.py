@@ -35,47 +35,62 @@ class IntroState(State):
         self.bg_image = self.game.resources.images["intro_bg"]
         self.font = self.game.resources.fonts["menu"]
 
-        # Define start button
-        self.button_colour = (89, 233, 89)
-        self.button_rect = pygame.Rect(0, 0, 150, 50)
-        self.button_rect.center = (WIDTH /2, HEIGHT /2)
+        #Load images for Introstate, create rects
+        self.instruct_scr = self.game.resources.images["instruct_scr"]
+        self.instruct_scr_rect = self.instruct_scr.get_rect(center=(WIDTH /2, HEIGHT /2))
 
-        # Define Instructions button
-        self.instruction_btn_col = (34, 89, 34)
-        self.instruction_btn_rect = pygame.Rect(0, 0, 175, 63)
-        self.instruction_btn_rect.center = (game.resources.tablet_coords[1])
+        self.enter_btn = self.game.resources.images["enter_btn"]
+        self.enter_btn_rect = self.enter_btn.get_rect(center=(WIDTH /2, HEIGHT /2))
+
+        self.instruct_btn = self.game.resources.images["instruct_btn"]
+        self.instruct_btn_rect = self.instruct_btn.get_rect(center=(self.game.resources.tablet_coords[1]))
+
+        self.ct_dwn_btn_1 = self.game.resources.images["ct_dwn_1"]
+        self.ct_dwn_btn_1_rect = self.ct_dwn_btn_1.get_rect(center=(WIDTH /2, HEIGHT /2))
+
+        self.ct_dwn_btn_2 = self.game.resources.images["ct_dwn_2"]
+        self.ct_dwn_btn_2_rect = self.ct_dwn_btn_2 .get_rect(center=(WIDTH /2, HEIGHT /2))
+
+        self.ct_dwn_btn_3 = self.game.resources.images["ct_dwn_3"]
+        self.ct_dwn_btn_3_rect = self.ct_dwn_btn_3.get_rect(center=(WIDTH /2, HEIGHT /2))
+
+        # Set start time and flag for blitting instructions and enter button
+        self.start_time = pygame.time.get_ticks()
+        self.show_start_time = False
+
+        #Set flag for showing instruction screen
+        self.show_instructions = False
 
     def handle_events(self, events):
         super().handle_events(events)
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.button_rect.collidepoint(event.pos):
-                    self.game.current_state = self.game.states["GetReadyState"]
-                elif self.instruction_btn_rect.collidepoint(event.pos):
-                    pass
+                if self.instruct_btn_rect.collidepoint(event.pos):
+                    self.show_instructions = True
+                elif self.enter_btn_rect.collidepoint(event.pos):
+                    self.game.current_state = self.game.states["GamePlayState"]
 
     def update(self, dt):
-        pass
+        # Calculate time since start
+        elapsed_time = pygame.time.get_ticks() - self.start_time
+        if elapsed_time >= 2000:
+            self.show_start_time = True
+
 
     def render(self, screen):
         screen.blit(self.bg_image, (0, 0))
-        text_surface = self.font.render("Welcome to n-back", True, (211, 99, 35))
-        text_surface_rect = text_surface.get_rect(center= (WIDTH / 2, 20))
-        screen.blit(text_surface, text_surface_rect)
 
-        # Start button rect & text
-        pygame.draw.rect(screen, self.button_colour, self.button_rect)
-        start_btn_surf = self.game.resources.fonts["btn_1"].render("s t a r t", True, (233, 89, 233))
-        start_btn_surf_rect = start_btn_surf.get_rect(center= (WIDTH /2, HEIGHT /2))
-        screen.blit(start_btn_surf, start_btn_surf_rect)
+        # Blit enter button
+        if self.show_start_time:
+            screen.blit(self.enter_btn, self.enter_btn_rect)
 
-        # Blit Instructions button
-        pygame.draw.rect(screen, self.instruction_btn_col, self.instruction_btn_rect)
-        #instruction_btn_surf = self.font["btn_1"].render("Instructions", True, (144, 89, 233))
-        instruction_btn_surf = self.game.resources.fonts["btn_1"].render("Instructions?", True, (144, 89, 233))
-        instruction_btn_rect = instruction_btn_surf.get_rect(center= (self.game.resources.tablet_coords[1]))
-        screen.blit(instruction_btn_surf, instruction_btn_rect)
+            #Blit instruction button only if instructions screen not shown
+            if not self.show_instructions:
+                screen.blit(self.instruct_btn, self.instruct_btn_rect)
 
+            #Blit instruction screen if "show_instruction' flag is True
+            if self.show_instructions:
+                screen.blit(self.instruct_scr, self.instruct_scr_rect)
 
 class GetReadyState(State):
     def __init__(self, game):
