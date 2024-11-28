@@ -176,8 +176,12 @@ class GamePlayState(State):
 
         self.shuffle_coordinates()
 
+        # Reset countdown logic
+
 
     def handle_events(self, events):
+        super().__init__(self.game)
+
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_g:
@@ -194,6 +198,7 @@ class GamePlayState(State):
 
         if self.is_counting_down:
             if self.current_countdown_index >= len(self.count_down_images):
+                self.current_countdown_index = len(self.count_down_images)
                 self.is_counting_down = False
                 self.current_countdown_index = 0
                 return
@@ -245,18 +250,20 @@ class GamePlayState(State):
                 self.current_number = None
                 self.current_coord = None
 
+    def count_down(self):
+        self.is_counting_down
+        self.current_countdown_index = 0
+        self.count_down_start_time = pygame.time.get_ticks()
+
     def render(self, screen):
         screen.fill((5, 13, 55))
         screen.blit(self.game_box, self.game_box_rect)
 
-        # Render countdown tabs
         if self.is_counting_down:
             count_down_image = self.count_down_images[self.current_countdown_index]
-            count_down_image_rect = count_down_image.get_rect(center= (WIDTH //2, HEIGHT //2))
-
+            count_down_image_rect = count_down_image.get_rect(center=(WIDTH // 2, HEIGHT // 2))
             screen.blit(count_down_image, count_down_image_rect)
-        super().render(screen)
-
+            return # Skips rendering game_box during countdown
 
         # Render the current number at the selected coordinate
         if self.current_number is not None and self.current_coord is not None:
@@ -264,6 +271,9 @@ class GamePlayState(State):
             rand_num_surf_rect = rand_num_surf.get_rect(center=self.current_coord)
             screen.blit(rand_num_surf, rand_num_surf_rect)
 
+            # Render countdown tabs
+
+        #super().render(screen)
 
 
 class FinishState(State):
