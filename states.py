@@ -107,12 +107,17 @@ class GetReadyState(State):
             # Transition to0 Gameplay state
             self.game.current_state = self.game.states["GamePlayState"]
 
+        # logic for countdown
+
+
     def render(self, screen):
         screen.fill((0, 90, 13))
         font = self.game.resources.fonts["menu"]
         text_surface = font.render("Get Ready, Dwindle", True, (179, 122, 180))
         text_rect = text_surface.get_rect(center= (WIDTH / 2, HEIGHT / 2))
         screen.blit(text_surface, text_rect)
+
+        # blit countdown in GamePlayState
 
 
 class GamePlayState(State):
@@ -136,6 +141,18 @@ class GamePlayState(State):
         # Initialise round variables
         self.num_of_rounds = 3
         self.current_round_num = 0
+
+        # Get countdown images and put in list
+        self.count_down_images = [
+            self.game.resources.images["ct_dwn_1"],
+            self.game.resources.images["ct_dwn_2"],
+            self.game.resources.images["ct_dwn_3"]
+        ]
+
+        # Set countdown variables
+        self.is_counting_down = False
+        self.current_countdown_index = 0
+        self.count_down_start_time = 0
 
         # Call reset to initialize game logic variables
         self.reset()
@@ -174,6 +191,22 @@ class GamePlayState(State):
         """Update the game logic"""
 
         current_time = pygame.time.get_ticks()
+
+        if self.is_counting_down:
+            if self.current_countdown_index >= len(self.count_down_images):
+                self.is_counting_down = False
+                self.current_countdown_index = 0
+                return
+
+            if current_time - self.count_down_start_time >= 1000:
+                self.current_countdown_index += 1
+                self.count_down_start_time = current_time
+            return
+
+        # Handle other game updates
+        super().update(dt)
+
+
 
         if self.num_count >= self.num_per_round and self.current_number is None:
             if self.current_round_num < self.num_of_rounds -1:
@@ -216,11 +249,22 @@ class GamePlayState(State):
         screen.fill((5, 13, 55))
         screen.blit(self.game_box, self.game_box_rect)
 
+        # Render countdown tabs
+        if self.is_counting_down:
+            count_down_image = self.count_down_images[self.current_countdown_index]
+            count_down_image_rect = count_down_image.get_rect(center= (WIDTH //2, HEIGHT //2))
+
+            screen.blit(count_down_image, count_down_image_rect)
+        super().render(screen)
+
+
         # Render the current number at the selected coordinate
         if self.current_number is not None and self.current_coord is not None:
             rand_num_surf = self.font.render(str(self.current_number), True, (233, 144, 89))
             rand_num_surf_rect = rand_num_surf.get_rect(center=self.current_coord)
             screen.blit(rand_num_surf, rand_num_surf_rect)
+
+
 
 class FinishState(State):
     def __init__(self, game):
