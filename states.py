@@ -12,7 +12,6 @@ class State:
     def __init__(self, game):
         self.game = game
 
-
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.QUIT:
@@ -45,14 +44,14 @@ class IntroState(State):
         self.instruct_btn = self.game.resources.images["instruct_btn"]
         self.instruct_btn_rect = self.instruct_btn.get_rect(center=(self.game.resources.tablet_coords[1]))
 
-        self.ct_dwn_btn_1 = self.game.resources.images["ct_dwn_1"]
-        self.ct_dwn_btn_1_rect = self.ct_dwn_btn_1.get_rect(center=(WIDTH /2, HEIGHT /2))
+        self.ct_dwn_btn_3 = self.game.resources.images["ct_dwn_3"]
+        self.ct_dwn_btn_3_rect = self.ct_dwn_btn_3.get_rect(center=(WIDTH /2, HEIGHT /2))
 
         self.ct_dwn_btn_2 = self.game.resources.images["ct_dwn_2"]
         self.ct_dwn_btn_2_rect = self.ct_dwn_btn_2 .get_rect(center=(WIDTH /2, HEIGHT /2))
 
-        self.ct_dwn_btn_3 = self.game.resources.images["ct_dwn_3"]
-        self.ct_dwn_btn_3_rect = self.ct_dwn_btn_3.get_rect(center=(WIDTH /2, HEIGHT /2))
+        self.ct_dwn_btn_1 = self.game.resources.images["ct_dwn_1"]
+        self.ct_dwn_btn_1_rect = self.ct_dwn_btn_1.get_rect(center=(WIDTH /2, HEIGHT /2))
 
         # Set start time and flag for blitting instructions and enter button
         self.start_time = pygame.time.get_ticks()
@@ -117,8 +116,6 @@ class GetReadyState(State):
         text_rect = text_surface.get_rect(center= (WIDTH / 2, HEIGHT / 2))
         screen.blit(text_surface, text_rect)
 
-        # blit countdown in GamePlayState
-
 
 class GamePlayState(State):
 
@@ -144,11 +141,10 @@ class GamePlayState(State):
 
         # Get countdown images and put in list
         self.count_down_images = [
-            self.game.resources.images["ct_dwn_1"],
+            self.game.resources.images["ct_dwn_3"],
             self.game.resources.images["ct_dwn_2"],
-            self.game.resources.images["ct_dwn_3"]
+            self.game.resources.images["ct_dwn_1"]
         ]
-
         # Set countdown variables
         self.is_counting_down = False
         self.current_countdown_index = 0
@@ -176,11 +172,12 @@ class GamePlayState(State):
 
         self.shuffle_coordinates()
 
-        # Reset countdown logic
+        # Trigger countdown
+        self.count_down()
 
 
     def handle_events(self, events):
-        super().__init__(self.game)
+        super().handle_events(events)
 
         for event in events:
             if event.type == pygame.KEYDOWN:
@@ -197,21 +194,17 @@ class GamePlayState(State):
         current_time = pygame.time.get_ticks()
 
         if self.is_counting_down:
-            if self.current_countdown_index >= len(self.count_down_images):
-                self.current_countdown_index = len(self.count_down_images)
-                self.is_counting_down = False
-                self.current_countdown_index = 0
-                return
-
             if current_time - self.count_down_start_time >= 1000:
                 self.current_countdown_index += 1
                 self.count_down_start_time = current_time
+
+                if self.current_countdown_index >= len(self.count_down_images):
+                    self.is_counting_down = False
+                    self.current_countdown_index = 0
             return
 
         # Handle other game updates
         super().update(dt)
-
-
 
         if self.num_count >= self.num_per_round and self.current_number is None:
             if self.current_round_num < self.num_of_rounds -1:
@@ -251,18 +244,20 @@ class GamePlayState(State):
                 self.current_coord = None
 
     def count_down(self):
-        self.is_counting_down
+        self.is_counting_down = True
         self.current_countdown_index = 0
         self.count_down_start_time = pygame.time.get_ticks()
 
     def render(self, screen):
         screen.fill((5, 13, 55))
+        # Render game_box
         screen.blit(self.game_box, self.game_box_rect)
 
         if self.is_counting_down:
             count_down_image = self.count_down_images[self.current_countdown_index]
             count_down_image_rect = count_down_image.get_rect(center=(WIDTH // 2, HEIGHT // 2))
             screen.blit(count_down_image, count_down_image_rect)
+            print("countdown tabs stuff is happening")
             return # Skips rendering game_box during countdown
 
         # Render the current number at the selected coordinate
@@ -270,10 +265,6 @@ class GamePlayState(State):
             rand_num_surf = self.font.render(str(self.current_number), True, (233, 144, 89))
             rand_num_surf_rect = rand_num_surf.get_rect(center=self.current_coord)
             screen.blit(rand_num_surf, rand_num_surf_rect)
-
-            # Render countdown tabs
-
-        #super().render(screen)
 
 
 class FinishState(State):
@@ -284,6 +275,7 @@ class FinishState(State):
         self.show_play_again_text = False
 
     def handle_events(self, events):
+        super().handle_events(events)
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_y:
