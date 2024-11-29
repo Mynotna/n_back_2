@@ -11,7 +11,7 @@ class DataManager:
     def create_tables(self):
         # Create tables to store game data
         self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS session(
+            CREATE TABLE IF NOT EXISTS sessions (
             session_id INTEGER PRIMARY KEY AUTOINCREMENT,
             start_time Text
                 )
