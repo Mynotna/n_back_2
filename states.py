@@ -315,37 +315,43 @@ class FinishState(State):
     def __init__(self, game):
         super().__init__(game)
         self.start_time = pygame.time.get_ticks()
-        self.play_again_delay = 2000 # Second delay
+        self.play_again_delay = 4000  # Delay in milliseconds (4 seconds)
         self.show_play_again_text = False
 
     def handle_events(self, events):
         super().handle_events(events)
         for event in events:
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_y:
+                if event.key == pygame.K_y:  # Reset and go to IntroState
                     self.game.states["GamePlayState"].reset()
                     self.game.current_state = self.game.states["IntroState"]
-                elif event.key == pygame.K_n:
+                elif event.key == pygame.K_n:  # Quit the game
                     self.game.running = False
-
 
     def update(self, dt):
         current_time = pygame.time.get_ticks()
+        # Check if the delay has passed
         if current_time - self.start_time >= self.play_again_delay:
             self.show_play_again_text = True
+        print(f"Elapsed time: {current_time - self.start_time}, show_play_again_text: {self.show_play_again_text}")
 
     def render(self, screen):
         screen.fill((55, 233, 21))
         font = self.game.resources.fonts["menu"]
 
-        text_surf = font.render("All over, Dwindle", True, (101, 78, 134))
-        text_surf_rect = text_surf.get_rect(center= (WIDTH /2, HEIGHT / 2))
-        screen.blit(text_surf, text_surf_rect)
-
+        # Conditionally blit "Play again, Dwindle?" message
         if self.show_play_again_text:
             play_again_surf = font.render("Play again, Dwindle? Y or N?", True, (101, 78, 134))
-            play_again_surf_rect = play_again_surf.get_rect(center= (WIDTH /2, 455))
+            play_again_surf_rect = play_again_surf.get_rect(center=(WIDTH // 2, 455))
             screen.blit(play_again_surf, play_again_surf_rect)
+
+
+        # Blit "All over, Dwindle" message
+        text_surf = font.render("All over, Dwindle", True, (101, 78, 134))
+        text_surf_rect = text_surf.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        screen.blit(text_surf, text_surf_rect)
+
+
 
 
 
