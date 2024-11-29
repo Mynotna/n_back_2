@@ -164,7 +164,6 @@ class GamePlayState(State):
         # Call reset to initialize game logic variables
         self.reset()
 
-
     def shuffle_coordinates(self):
         random.shuffle(self.tab_coords_list)
         self.coord_index = 0 # Resets index to start from beginning
@@ -185,7 +184,6 @@ class GamePlayState(State):
 
         # Trigger countdown
         self.count_down()
-
 
     def handle_events(self, events):
         super().handle_events(events)
