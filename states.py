@@ -110,9 +110,6 @@ class GetReadyState(State):
             # Transition to0 Gameplay state
             self.game.current_state = self.game.states["GamePlayState"]
 
-        # logic for countdown
-
-
     def render(self, screen):
         screen.fill((0, 90, 13))
         font = self.game.resources.fonts["menu"]
@@ -120,9 +117,7 @@ class GetReadyState(State):
         text_rect = text_surface.get_rect(center= (WIDTH / 2, HEIGHT / 2))
         screen.blit(text_surface, text_rect)
 
-
 class GamePlayState(State):
-
     def __init__(self, game):
         super().__init__(game)
         self.game_box = self.game.resources.images["game_box"]
@@ -272,7 +267,6 @@ class GamePlayState(State):
                 self.current_coord = None
 
     def check_missed_response(self):
-
         missed_number, missed_position = self.score_manager.check_missed_responses()
         timestamp = datetime.now().isoformat()
 
@@ -305,10 +299,33 @@ class GamePlayState(State):
             rand_num_surf_rect = rand_num_surf.get_rect(center=self.current_coord)
             screen.blit(rand_num_surf, rand_num_surf_rect)
 
-
     def __del__(self):
         if hasattr(self, 'data_manager') and self.data_manager:
             self.data_manager.close()
+
+class GameResultState(State):
+    def __init__(self, game, session_results):
+        super().__init__(game)
+        self.session_results = session_results  # results of the current session
+        self.button_rects = self.create_buttons()
+
+    def create_buttons(self):
+        """Create the buttons for Next Game and exit"""
+        next_game_button = pygame.Rect(WIDTH //2 -100, HEIGHT // 2 + 50, 200, 50)
+        exit_button = pygame.Rect(WIDTH //2 -100, HEIGHT //2 + 120, 200, 50)
+        return {"next_game": next_game_button, "exit": exit_button}
+
+    def handle_events(self, events):
+        super().handle_events(events)
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.button_rects["next_game"].collidepoint(event.pos)
+                    # Start the next game
+                    self.game.states["GamePlayState"].reset
+                    self.current_state = self.game.states["GamePlayState"]
+                elif self.button_rects["exit"].collidepoint(event.pos)
+                    # End the session
+                    self.game.current_state = self.game.states["FinishState"]
 
 
 class FinishState(State):
