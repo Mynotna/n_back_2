@@ -1,8 +1,12 @@
 import random
-
 import pygame
 import pygame.time
 import pygame.mixer
+
+from data_manager import DataManager
+from score_manager import ScoreManager
+from datetime import datetime
+
 
 from settings import WIDTH, HEIGHT, COLOR
 from random import shuffle, choice, randint
@@ -150,6 +154,13 @@ class GamePlayState(State):
         self.current_countdown_index = 0
         self.count_down_start_time = 0
 
+        #Initialise DataManager and ScoreManager
+        self.data_manager = DataManager()
+        self.score_manager = ScoreManager(n_back=2)
+
+        # Start a new session
+        self.data_manager.start_new_session()
+
         # Call reset to initialize game logic variables
         self.reset()
 
@@ -167,7 +178,7 @@ class GamePlayState(State):
         self.current_coord = None
         self.coord_index = 0
 
-        self.display_number_time = 1000
+        self.display_number_time = 1500
         self.last_number_time = pygame.time.get_ticks()
 
         self.shuffle_coordinates()
@@ -182,11 +193,23 @@ class GamePlayState(State):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_g:
-                    #Add logic to update lists which record the player's inputs
-                    pass
+                    #Player indicates position match
+                    input_time = pygame.time.get_ticks()
+                    self.score_manager.add_player_input(input_time, 'position')
+                    is_correct = int(self.score_manager.check_position_match())
+                    missed = 0
+                    self.data_manager.save_response(
+                        datetime.now().isoformat(), 'position', is_correct, missed
+                    )
                 elif event.key == pygame.K_j:
-                    #Add logic to update lists which record the player's inputs
-                    pass
+                    # Player indicates position match
+                    input_time = pygame.time.get_ticks()
+                    self.score_manager.add_player_input(input_time, 'number')
+                    is_correct = int(self.score_manager.check_number_match())
+                    missed = 0
+                    self.data_manager.save_response(
+                        datetime.now().isoformat(), 'number', is_correct, missed
+                    )
 
     def update(self, dt):
         """Update the game logic"""
@@ -233,6 +256,13 @@ class GamePlayState(State):
                 self.num_count += 1
                 self.last_number_time = current_time
 
+                # Append generated data to ScoreManager
+                self.score_manager.add_generated_data(self.current_number, self.current_coord)
+
+                # Save generated data to database
+                timestamp = datetime.now().isoformat()
+                self.data_manager.save_generated_data(timestamp, self.current_number, self.current_coord)
+
                 # Play audio files matching the numbers
                 if self.current_number in self.audio_files:
                     self.audio_files[self.current_number].play()
@@ -242,6 +272,17 @@ class GamePlayState(State):
             if current_time - self.last_number_time >= self.display_number_time:
                 self.current_number = None
                 self.current_coord = None
+
+    def check_missed_response(self):
+
+        missed_number, missed_position = self.score_manager.check_missed_responses()
+        timestamp = datetime.now().isoformat()
+
+        if missed_number:
+            self.data_manager.save_response(timestamp, 'number', is_correct=0, missed=1)
+
+        if missed_position:
+            self.data_manager.save_response(timestamp, 'position', is_correct=0, missed=1)
 
     def count_down(self):
         self.is_counting_down = True
@@ -265,6 +306,11 @@ class GamePlayState(State):
             rand_num_surf = self.font.render(str(self.current_number), True, (233, 144, 89))
             rand_num_surf_rect = rand_num_surf.get_rect(center=self.current_coord)
             screen.blit(rand_num_surf, rand_num_surf_rect)
+
+
+    def __del__(self):
+        if hasattr(self, 'data_manager') and self.data_manager:
+            self.data_manager.close()
 
 
 class FinishState(State):

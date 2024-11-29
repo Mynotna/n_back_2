@@ -2,7 +2,7 @@ import sqlite3
 from datetime import datetime
 
 class DataManager:
-    def __init__(self, db_name= 'game_data.db')
+    def __init__(self, db_name= 'game_data.db'):
         self.conn = sqlite3.connect(db_name)
         self.cursor = self.conn.cursor()
         self.create_tables()
@@ -18,8 +18,8 @@ class DataManager:
             ''')
 
         self.cursor.execute('''
-            CREAT TABLE IF NOT EXISTS responses(
-            id INTERGER PRIMARY KEY AUTOINCREMENT,
+            CREATE TABLE IF NOT EXISTS responses(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             session_id INTEGER,
             timestamp Text,
             response_type TEXT,
@@ -44,7 +44,7 @@ class DataManager:
         self.cursor.execute('''
         INSERT INTO generated_data (session_id, timestamp, number, position_x, position_y)
         VALUES (?, ?, ?, ?, ?)
-        '''), (self.session_id, timestamp, number, position[0], position[1])
+        ''', (self.session_id, timestamp, number, position[0], position[1]))
         self.conn.commit()
 
 
