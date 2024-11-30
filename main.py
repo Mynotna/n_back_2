@@ -1,7 +1,7 @@
 import pygame
 import pygame.mixer
 import sys
-from states import State, IntroState, GamePlayState, GetReadyState, FinishState
+from states import State, IntroState, GamePlayState, GetReadyState, FinishState, GameResultState
 from settings import WIDTH, HEIGHT
 from resources import ResourceManager
 
@@ -13,18 +13,34 @@ class Game:
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.resources = ResourceManager()
         self.running = True
-
         self.clock = pygame.time.Clock()
+
+        # Initialize states and results tracking
         self.states = {}
         self.current_state = None
+        self.aggregated_results = {"correct": 0, "missed": 0} # Track overall results
         self.load_states()
 
     def load_states(self):
         self.states["IntroState"] = IntroState(self)
         self.states["GetReadyState"] = GetReadyState(self)
         self.states["GamePlayState"] = GamePlayState(self)
-        self.states["FinishState"] = FinishState(self)
+
         self.current_state = self.states["IntroState"]
+
+
+    def transition_to_Game_result_state(self, session_results):
+        """
+                Transition to GameResultState after a game session ends.
+                Updates aggregated results and creates a new GameResultState instance.
+                """
+        self.aggregated_results["correct"] += session_results["correct"]
+        self.aggregated_results["missed"] += session_results["missed"]
+
+        # Create a new GameResultState and transition it
+        self.states["GameResultState"] = GameResultState(self, session_results)
+        self.current_state = self.states["GameResultState"]
+
 
     def run(self):
         while self.running:
