@@ -99,7 +99,7 @@ class GetReadyState(State):
     def __init__(self, game):
         super().__init__(game)
         self.start_time = pygame.time.get_ticks()
-        self.delay = 5000
+        self.delay = 3000
 
     def handle_events(self, events):
         pass
@@ -118,12 +118,19 @@ class GetReadyState(State):
         screen.blit(text_surface, text_rect)
 
 class GamePlayState(State):
+    """Numbers are placed using coordinates
+    Instructions are blitted to the screen as png files
+    """
     def __init__(self, game):
         super().__init__(game)
         self.game_box = self.game.resources.images["game_box"]
         self.game_box_rect = self.game_box.get_rect(center=(WIDTH / 2, HEIGHT / 2))
         self.font = self.game.resources.fonts["main"]
         self.tablet_coords = game.resources.tablet_coords
+
+        # Score counting variables
+        self.correct_count = 0
+        self.missed_count = 0
 
         #Get audio files
         self.audio_files = game.resources.sounds
@@ -165,6 +172,10 @@ class GamePlayState(State):
 
     def reset(self):
         """Reset the game logic for a new round."""
+        # Score counting variables
+        self.correct_count = 0
+        self.missed_count = 0
+
         self.num_count = 0
         self.num_per_round = 10
 
@@ -190,6 +201,7 @@ class GamePlayState(State):
                     input_time = pygame.time.get_ticks()
                     self.score_manager.add_player_input(input_time, 'position')
                     is_correct = int(self.score_manager.check_position_match())
+                    print(f"Correct position (g) key press: {is_correct}")
                     missed = 0
                     self.data_manager.save_response(
                         datetime.now().isoformat(), 'position', is_correct, missed
@@ -199,6 +211,7 @@ class GamePlayState(State):
                     input_time = pygame.time.get_ticks()
                     self.score_manager.add_player_input(input_time, 'number')
                     is_correct = int(self.score_manager.check_number_match())
+                    print(f"Correct number (j) key press: {is_correct}")
                     missed = 0
                     self.data_manager.save_response(
                         datetime.now().isoformat(), 'number', is_correct, missed
@@ -229,7 +242,11 @@ class GamePlayState(State):
                 self.reset()
             else:
                 # All rounds complete. Move to next round
-                self.game.current_state = self.game.states["FinishState"]
+                # aggregated_results = self.game.aggregated_results
+                # session_rank = f"rank #{len(aggregated_results)}"
+                self.end_game()
+                # self.game.states["FinishState"] = FinishState(self.game, aggregated_results, session_rank)
+                # self.game.current_state = self.game.states["FinishState"]
             return
 
         if self.current_number is None:
@@ -290,7 +307,6 @@ class GamePlayState(State):
             count_down_image = self.count_down_images[self.current_countdown_index]
             count_down_image_rect = count_down_image.get_rect(center=(WIDTH // 2, HEIGHT // 2))
             screen.blit(count_down_image, count_down_image_rect)
-            print("countdown tabs stuff is happening")
             return # Skips rendering game_box during countdown
 
         # Render the current number at the selected coordinate
@@ -299,9 +315,18 @@ class GamePlayState(State):
             rand_num_surf_rect = rand_num_surf.get_rect(center=self.current_coord)
             screen.blit(rand_num_surf, rand_num_surf_rect)
 
+
+    def end_game(self):
+        """calculate results and transition to GameResultState"""
+        session_results = {"correct": self.correct_count, "missed": self.missed_count}
+        self.game.transition_to_Game_result_state(session_results)
+        print(f"Transition to Results screen code ran: {session_results}")
+
+
     def __del__(self):
         if hasattr(self, 'data_manager') and self.data_manager:
             self.data_manager.close()
+
 
 class GameResultState(State):
     def __init__(self, game, session_results):
@@ -344,11 +369,11 @@ class GameResultState(State):
 
         # Render button text
         next_game_text = font.render("Next game?", True, (233, 89, 21))
-        next_game_rect = next_game_text.get_rect(center= self.button_rects["next_game"])
+        next_game_rect = next_game_text.get_rect(center= self.button_rects["next_game"].center)
         screen.blit(next_game_text, next_game_rect)
 
         exit_text = font.render("Exit?", True, (89, 211, 239))
-        exit_text_rect = exit_text.get.rect(center= self.button_rects["exit"])
+        exit_text_rect = exit_text.get_rect(center= self.button_rects["exit"].center)
         screen.blit(exit_text, exit_text_rect)
 
 
@@ -362,8 +387,8 @@ class FinishState(State):
 
     def create_buttons(self):
         """Create Play again and Exit buttons"""
-        restart_button = pygame.draw.rect((WIDTH //2 - 100, HEIGHT //2 + 50, 200, 50))
-        exit_button = pygame.draw.rect((WIDTH //2 - 100, HEIGHT //2 + 120, 200, 50))
+        restart_button = pygame.Rect((WIDTH //2 - 100, HEIGHT //2 + 50, 200, 50))
+        exit_button = pygame.Rect((WIDTH //2 - 100, HEIGHT //2 + 120, 200, 50))
         return {"restart": restart_button, "exit": exit_button}
 
         # Store results
@@ -383,12 +408,12 @@ class FinishState(State):
     def handle_events(self, events):
         super().handle_events(events)
         for event in events:
-            if event.type == pygame.KEYDOWN:
-                if self.button_rects["restart"].collidepoint():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.button_rects["restart"].collidepoint(event.pos):
                     # Reset entire session
                     self.game.reset_session()
-                    self.game.current_state = self.game.states["introState"]
-                elif self.button_rects["exit"].collidepoint():
+                    self.game.current_state = self.game.states["IntroState"]
+                elif self.button_rects["exit"].collidepoint(event.pos):
                     self.game.running = False
 
 

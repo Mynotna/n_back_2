@@ -29,6 +29,17 @@ class Game:
         self.current_state = self.states["IntroState"]
 
 
+    def reset_session(self):
+        """ Reset the game session to start over"""
+        self.aggregated_results = {"correct": 0, "missed": 0}
+
+        # Reset all states
+        self.load_states()
+
+        # Transition back to old state
+        self.current_state = self.states["IntroState"]
+
+
     def transition_to_Game_result_state(self, session_results):
         """
                 Transition to GameResultState after a game session ends.
@@ -40,6 +51,16 @@ class Game:
         # Create a new GameResultState and transition it
         self.states["GameResultState"] = GameResultState(self, session_results)
         self.current_state = self.states["GameResultState"]
+
+
+    def transition_to_finish_state(self):
+        """Transition to FinishState where all results are displayed
+        Included aggregated results"""
+
+        session_rank = f"Rank #{len(self.aggregated_results)}"
+        # Create a new Finish state and transition to it
+        self.states["FinishState"] = FinishState(self, self.aggregated_results, session_rank)
+        self.current_state = self.states["FinishState"]
 
 
     def run(self):
