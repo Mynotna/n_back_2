@@ -7,7 +7,6 @@ from data_manager import DataManager
 from score_manager import ScoreManager
 from datetime import datetime
 
-
 from settings import WIDTH, HEIGHT, COLOR
 from random import shuffle, choice, randint
 
@@ -262,7 +261,7 @@ class GamePlayState(State):
                     self.coord_index += 1
 
                 # Generate random number
-                self.current_number = random.randint(1, 9)
+                self.current_number = random.randint(1, 3)
                 self.num_count += 1
                 self.last_number_time = current_time
 
@@ -275,7 +274,11 @@ class GamePlayState(State):
 
                 # Play audio files matching the numbers
                 if self.current_number in self.audio_files:
-                    self.audio_files[self.current_number].play()
+                    sound = self.audio_files[self.current_number]
+                    if sound:
+                        sound.play()
+                    else:
+                        print(f"No sound for number: {self.current_number}")
 
         else:
             #Clear the current number and coordinate
@@ -348,15 +351,15 @@ class GameResultState(State):
                 if self.button_rects["next_game"].collidepoint(event.pos):
                     # Start the next game
                     self.game.states["GamePlayState"].reset()
-                    self.current_state = self.game.states["GamePlayState"]
+                    self.game.current_state = self.game.states["GamePlayState"]
                 elif self.button_rects["exit"].collidepoint(event.pos):
                     # End the session
-                    self.game.current_state = self.game.states["FinishState"]
+                    self.game.transition_to_finish_state()
 
 
     def render(self, screen):
         screen.fill((0, 144, 233))
-        font = self.game.resources.fonts["menu"]
+        font = self.game.resources.fonts["btn_1"]
         # Display session results
         results_text = f"Results: {self.session_results["correct"]} correct, {self.session_results["missed"]}"
         results_surf = font.render(results_text, True, (211, 211, 144))
@@ -368,11 +371,11 @@ class GameResultState(State):
         pygame.draw.rect(screen, (111, 212, 211), self.button_rects["exit"])
 
         # Render button text
-        next_game_text = font.render("Next game?", True, (233, 89, 21))
+        next_game_text = font.render("Next game?", True, (89, 89, 21))
         next_game_rect = next_game_text.get_rect(center= self.button_rects["next_game"].center)
         screen.blit(next_game_text, next_game_rect)
 
-        exit_text = font.render("Exit?", True, (89, 211, 239))
+        exit_text = font.render("Exit?", True, (89, 89, 21))
         exit_text_rect = exit_text.get_rect(center= self.button_rects["exit"].center)
         screen.blit(exit_text, exit_text_rect)
 
