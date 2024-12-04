@@ -31,6 +31,7 @@ class ResourceManager:
             "menu": pygame.font.Font("assets/fonts/Poppins-ExtraBold.ttf", 34),
             "btn_1": pygame.font.Font("assets/fonts/Poppins-ExtraBold.ttf", 21)
         }
+
     @staticmethod
     def get_table_coords():
 
