@@ -33,7 +33,7 @@ class ResourceManager:
         }
 
     @staticmethod
-    def get_table_coords():
+    def get_tablet_coords():
 
         return  {
                 1: (150, 155),
