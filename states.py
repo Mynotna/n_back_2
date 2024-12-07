@@ -1,3 +1,4 @@
+import logging
 import random
 import pygame
 import pygame.time
@@ -11,6 +12,12 @@ from datetime import datetime
 from resources import ResourceManager
 
 from settings import WIDTH, HEIGHT, COLOR
+
+import logging
+
+# configure logger
+logging.basicConfig(level= logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 
 
@@ -228,7 +235,6 @@ class GamePlayState(State):
             if current_time - self.count_down_start_time >= 1000:
                 self.current_countdown_index += 1
                 self.count_down_start_time = current_time
-
                 if self.current_countdown_index >= len(self.count_down_images):
                     self.is_counting_down = False
                     self.current_countdown_index = 0
@@ -237,67 +243,50 @@ class GamePlayState(State):
         # Handle other game updates
         super().update(dt)
 
-        if self.num_count >= self.num_per_round and self.current_number is None:
-            if self.current_round_num < self.num_of_rounds -1:
-                # Move to the next round
-                self.current_round_num += 1
-                self.reset()
-            else:
-                # All rounds complete. Move to next round
-                # aggregated_results = self.game.aggregated_results
-                # session_rank = f"rank #{len(aggregated_results)}"
-                self.end_game()
-                # self.game.states["FinishState"] = FinishState(self.game, aggregated_results, session_rank)
-                # self.game.current_state = self.game.states["FinishState"]
-            return
-
+        # Display new number if none currently displayed
         if self.current_number is None:
+            # Check if it's time to display new number
             if current_time - self.last_number_time >= self.display_number_time:
-                # Get the next coordinate from the shuffled list
-                if self.coord_index < len(self.n_back_coords):
-                    self.current_coord = self.n_back_coords[self.coord_index]
-                    self.coord_index += 1
+                # Ensure there are enough pre-computed coords and numbers
+                if self.num_count < len(self.n_back_numbers) and self.num_count < len(self.n_back_coords):
+                    self.current_number = self.n_back_numbers[self.num_count]
+                    self.current_coord = self.n_back_coords[self.num_count]
+
+                    self.last_number_time = current_time
+                    self.num_count += 1
+
+                    # Add generated data to ScoreManager and DataManager
+                    self.score_manager.add_generated_data(self.current_number, self.current_coord)
+                    timestamp = datetime.now().isoformat()
+                    self.data_manager.save_generated_data(timestamp, self.current_number, self.current_coord)
+
+                    # Play audio files
+                    if self.current_number in self.audio_files:
+                        sound = self.audio_files[self.current_number]
+                        if sound:
+                            sound.play()
+                        else:
+                            logging.error(f"No audio files to play")
                 else:
-                    # Reset if necessary (e.g., for a new round)
-
-                    self.current_coord = self.n_back_coords[self.coord_index]
-                    self.coord_index += 1
-
-                # Generate random number
-                self.current_number = random.randint(1, 3)
-                self.num_count += 1
-                self.last_number_time = current_time
-
-                # Append generated data to ScoreManager
-                self.score_manager.add_generated_data(self.current_number, self.current_coord)
-
-                # Save generated data to database
-                timestamp = datetime.now().isoformat()
-                self.data_manager.save_generated_data(timestamp, self.current_number, self.current_coord)
-
-                # Play audio files matching the numbers
-                if self.current_number in self.audio_files:
-                    sound = self.audio_files[self.current_number]
-                    if sound:
-                        sound.play()
-                    else:
-                        print(f"No sound for number: {self.current_number}")
-
+                    # No more coords or numbers. Bring game to an end
+                    self.end_game()
         else:
-            #Clear the current number and coordinate
+            # Clear the number after display time expires
             if current_time - self.last_number_time >= self.display_number_time:
                 self.current_number = None
-                self.current_coord = None
+                self. current_coord = None
 
-    def check_missed_response(self):
-        missed_number, missed_position = self.score_manager.check_missed_responses()
-        timestamp = datetime.now().isoformat()
+                # Check for missed responses after each number disappears
+                missed_number, missed_position = self.score_manager.check_missed_responses()
+                timestamp = datetime.now().isoformat()
 
-        if missed_number:
-            self.data_manager.save_response(timestamp, 'number', is_correct=0, missed=1)
+                if missed_number:
+                    self.data_manager.save_response(timestamp, 'number', 0, 1)
+                    self.missed_count += 1
+                if missed_position:
+                    self.data_manager.save_response(timestamp, 'position', 0, 1)
+                    self.missed_count += 1
 
-        if missed_position:
-            self.data_manager.save_response(timestamp, 'position', is_correct=0, missed=1)
 
     def count_down(self):
         self.is_counting_down = True
