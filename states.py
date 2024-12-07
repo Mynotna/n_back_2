@@ -4,11 +4,14 @@ import pygame.time
 import pygame.mixer
 
 from data_manager import DataManager
+from random_gen import RandomGenerator
 from score_manager import ScoreManager
 from datetime import datetime
 
+from resources import ResourceManager
+
 from settings import WIDTH, HEIGHT, COLOR
-from random import shuffle, choice, randint
+
 
 
 class State:
@@ -45,7 +48,7 @@ class IntroState(State):
         self.enter_btn_rect = self.enter_btn.get_rect(center=(WIDTH /2, HEIGHT /2))
 
         self.instruct_btn = self.game.resources.images["instruct_btn"]
-        self.instruct_btn_rect = self.instruct_btn.get_rect(center=(self.game.resources.tablet_coords[1]))
+        self.instruct_btn_rect = self.instruct_btn.get_rect(center=(ResourceManager.get_tablet_coords()[1]))
 
         self.ct_dwn_btn_3 = self.game.resources.images["ct_dwn_3"]
         self.ct_dwn_btn_3_rect = self.ct_dwn_btn_3.get_rect(center=(WIDTH /2, HEIGHT /2))
@@ -125,24 +128,29 @@ class GamePlayState(State):
         self.game_box = self.game.resources.images["game_box"]
         self.game_box_rect = self.game_box.get_rect(center=(WIDTH / 2, HEIGHT / 2))
         self.font = self.game.resources.fonts["main"]
-        self.tablet_coords = game.resources.tablet_coords
 
-        # Score counting variables
-        self.correct_count = 0
+        # Initialise RandomGenerator and get n_back lists
+        n_back_value = 2
+        self.random_gen = RandomGenerator(n=n_back_value)
+        self.n_back_numbers, self.n_back_coords = self.random_gen.random_list_generator()
+
+        # correct_count = 0
         self.missed_count = 0
 
         #Get audio files
         self.audio_files = game.resources.sounds
 
-        # Convert coords to list
-        self.tab_coords_list = list(self.tablet_coords.values())
-
-        # Initialize shuffled coordinates
-        self.shuffle_coordinates()
-
         # Initialise round variables
         self.num_of_rounds = 3
         self.current_round_num = 0
+        self.num_per_round = 10
+        self.num_count = 0
+
+        # Number and coordinate for display variables
+        self.current_number = None
+        self.current_coord = None
+        self.display_number_time = 1500
+        self.last_number_time = pygame.time.get_ticks()
 
         # Get countdown images and put in list
         self.count_down_images = [
@@ -165,9 +173,6 @@ class GamePlayState(State):
         # Call reset to initialize game logic variables
         self.reset()
 
-    def shuffle_coordinates(self):
-        random.shuffle(self.tab_coords_list)
-        self.coord_index = 0 # Resets index to start from beginning
 
     def reset(self):
         """Reset the game logic for a new round."""
@@ -184,8 +189,6 @@ class GamePlayState(State):
 
         self.display_number_time = 1500
         self.last_number_time = pygame.time.get_ticks()
-
-        self.shuffle_coordinates()
 
         # Trigger countdown
         self.count_down()
@@ -251,13 +254,13 @@ class GamePlayState(State):
         if self.current_number is None:
             if current_time - self.last_number_time >= self.display_number_time:
                 # Get the next coordinate from the shuffled list
-                if self.coord_index < len(self.tab_coords_list):
-                    self.current_coord = self.tab_coords_list[self.coord_index]
+                if self.coord_index < len(self.n_back_coords):
+                    self.current_coord = self.n_back_coords[self.coord_index]
                     self.coord_index += 1
                 else:
                     # Reset if necessary (e.g., for a new round)
-                    self.shuffle_coordinates()
-                    self.current_coord = self.tab_coords_list[self.coord_index]
+
+                    self.current_coord = self.n_back_coords[self.coord_index]
                     self.coord_index += 1
 
                 # Generate random number
