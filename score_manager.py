@@ -31,6 +31,8 @@ class ScoreManager:
             else:
                 position_status = "incorrect"
 
+        return number_status, position_status
+
 
 
 
