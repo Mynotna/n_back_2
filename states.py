@@ -210,7 +210,7 @@ class GamePlayState(State):
                     input_time = pygame.time.get_ticks()
                     self.score_manager.add_player_input(input_time, 'position')
                     is_correct = int(self.score_manager.check_position_match())
-                    print(f"Correct position (g) key press: {is_correct}")
+                    logging.INFO(f"Correct position (g) key press: {is_correct}")
                     missed = 0
                     self.data_manager.save_response(
                         datetime.now().isoformat(), 'position', is_correct, missed
@@ -220,7 +220,7 @@ class GamePlayState(State):
                     input_time = pygame.time.get_ticks()
                     self.score_manager.add_player_input(input_time, 'number')
                     is_correct = int(self.score_manager.check_number_match())
-                    print(f"Correct number (j) key press: {is_correct}")
+                    logging.INFO(f"Correct number (j) key press: {is_correct}")
                     missed = 0
                     self.data_manager.save_response(
                         datetime.now().isoformat(), 'number', is_correct, missed

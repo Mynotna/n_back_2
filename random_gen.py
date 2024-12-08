@@ -19,7 +19,7 @@ class RandomGenerator:
 
     def __init__(self, n):
         self.n = n
-        self.max_number = (n * 7) + 1
+        self.max_number = (n * 7)
         if self.n >= 8 or self.n < 2:
             raise ValueError(f"N-back needs to be between 2 and 8 Genius")
 
@@ -34,6 +34,11 @@ class RandomGenerator:
             logger.error(f"Failed to initialise tab_coords dictionary: {e}")
 
     def random_list_generator(self):
+        """Controller method that calls the other methods to generate two random lists. Both lists
+        have repeated values using the same indices:
+        n_back_num_list
+        n_back_coord_list
+        """
         # Get indices and random_sample_indices
         indices, random_sample_indices = self.random_index_generator()
         # Call create n_back methods with indices and random_sample_indices as arguments
