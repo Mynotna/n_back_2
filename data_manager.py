@@ -10,7 +10,6 @@ class DataManager:
         self.session_id = None
 
     def create_tables(self):
-        try:
             self.cursor.execute('''
                 CREATE TABLE IF NOT EXISTS sessions (
                     session_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,13 +24,13 @@ class DataManager:
                     n_back_value INTEGER NOT NULL,
                     actual_value INTEGER NOT NULL,
                     player_number_response INTEGER,
-                    number_response_status TEXT CHECK(number_response_status IN("correct", "incorrect", "missed)),
+                    number_response_status TEXT CHECK(number_response_status IN("correct", "incorrect", "missed")),
                     actual_position TEXT NOT NULL,
                     player_position_response TEXT,
                     position_response_status TEXT CHECK(position_response_status IN("correct", "incorrect", "missed"))
                     FOREIGN KEY(session_id) REFERENCES sessions(session_id)
                 )
-                ''')
+            ''')
             self.conn.commit()
 
     def start_new_session(self):
@@ -55,10 +54,13 @@ class DataManager:
             actual_number, player_number_response, number_status,
             json.dumps(actual_position), json.dumps(player_position_response), position_status
         ))
+
         self.conn.commit()
+
 
     def close(self):
         self.conn.close()
+
 
                     
 

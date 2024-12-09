@@ -104,7 +104,29 @@ class RandomGenerator:
             duplicated_list[index + offset] = base_list[index]
         return duplicated_list
 
+
+    def generate_correct_responses(self, n_back_num_list, n_back_coord_list, n_back, display_number_time ):
+
+        """ Generate a dictionary of correct responses with time stamp, position and number recorded to determine score"""
+
+        correct_responses = {}
+        current_time = 0
+
+        for i in range(len(n_back_num_list)):
+            correct_responses[i] = {
+                "timestamp": current_time,
+                "number": n_back_num_list[i] if i >= n_back and n_back_num_list[i] == n_back_num_list[i - n_back] else None,
+                "position": n_back_coord_list[i] if i >= n_back and n_back_coord_list[i] == n_back_coord_list[i - n_back] else None,
+            }
+            current_time += display_number_time
+        return correct_responses
+
 if __name__ == "__main__":
     n = int(input("Enter n-back number: "))
+    display_number_time = 1500
     rand = RandomGenerator(n)
     rand.random_index_generator()
+    n_back_num_list, n_back_coord_list = rand.random_list_generator()
+
+    correct_responses = rand.generate_correct_responses(n_back_num_list, n_back_coord_list, n, display_number_time)
+    print(correct_responses)
