@@ -2,6 +2,7 @@ import random
 from random import sample, randint, choice
 from resources import ResourceManager
 import logging
+import pprint
 
 # configure logger
 logging.basicConfig(level= logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -97,6 +98,7 @@ class RandomGenerator:
         return n_back_tab_coord_list
 
     def duplicate_values(self, base_list, sample_indices, offset):
+        """Helper function that duplicates elements in lists based on index values"""
         duplicated_list = base_list.copy()
         for index in sample_indices:
             if index + offset >= len(base_list):
@@ -107,7 +109,8 @@ class RandomGenerator:
 
     def generate_correct_responses(self, n_back_num_list, n_back_coord_list, n_back, display_number_time ):
 
-        """ Generate a dictionary of correct responses with time stamp, position and number recorded to determine score"""
+        """ Generate a dictionary of correct responses with time stamp,
+        position and number recorded to determine score and for tests"""
 
         correct_responses = {}
         current_time = 0
@@ -129,4 +132,4 @@ if __name__ == "__main__":
     n_back_num_list, n_back_coord_list = rand.random_list_generator()
 
     correct_responses = rand.generate_correct_responses(n_back_num_list, n_back_coord_list, n, display_number_time)
-    print(correct_responses)
+    pprint.pprint(correct_responses)

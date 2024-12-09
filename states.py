@@ -205,26 +205,32 @@ class GamePlayState(State):
 
         for event in events:
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_g:
-                    #Player indicates position match
+                if event.key in (pygame.K_g, pygame.K_j):
+                    key_pressed = "position" if event.key == pygame.K_g else "number"
                     input_time = pygame.time.get_ticks()
-                    self.score_manager.add_player_input(input_time, 'position')
-                    is_correct = int(self.score_manager.check_position_match())
-                    logging.INFO(f"Correct position (g) key press: {is_correct}")
-                    missed = 0
-                    self.data_manager.save_response(
-                        datetime.now().isoformat(), 'position', is_correct, missed
+
+                    # Only first key press should be accepted
+                    if key_pressed == "position" and self.score_manager.player_position_inputs[-1:]:
+                        continue
+                    if key_pressed == "number" and self.score_manager.player_number_inputs[-1:]:
+                        continue
+
+                    # Validate responses against correct_responses
+                    current_correct_response = self.correct_responses[self.num_count -1]
+                    is_correct = int(
+                        key_pressed == "position" and current_correct_response["position"] is not None,
+                        key_pressed == "number" and current_correct_response["number"] is not None
                     )
-                elif event.key == pygame.K_j:
-                    # Player indicates position match
-                    input_time = pygame.time.get_ticks()
-                    self.score_manager.add_player_input(input_time, 'number')
-                    is_correct = int(self.score_manager.check_number_match())
-                    logging.INFO(f"Correct number (j) key press: {is_correct}")
-                    missed = 0
+                    logging.info(f"Key press '{key_pressed}' correctness: {is_correct}")
+                    self.score_manager.add_player_input(input_time, key_pressed)
                     self.data_manager.save_response(
-                        datetime.now().isoformat(), 'number', is_correct, missed
+                        datetime.now().isoformat(),
+                        key_pressed,
+                        is_correct,
+                        0 # missed count for this key press is 0
                     )
+                    if is_correct:
+                        self.correct_count += 1
 
     def update(self, dt):
         """Update the game logic"""
@@ -257,7 +263,7 @@ class GamePlayState(State):
 
                     # Add generated data to ScoreManager and DataManager
                     self.score_manager.add_generated_data(self.current_number, self.current_coord)
-                    timestamp = datetime.now().isoformat()
+                    timestamp = self.correct_responses[self.num_count -1]["timestamp"]
                     self.data_manager.save_generated_data(timestamp, self.current_number, self.current_coord)
 
                     # Play audio files
@@ -277,7 +283,13 @@ class GamePlayState(State):
                 self. current_coord = None
 
                 # Check for missed responses after each number disappears
-                missed_number, missed_position = self.score_manager.check_missed_responses()
+                current_correct_response = self.correct_responses[self.num_count -1]
+                missed_number = current_correct_response["number"] is not None and not any(
+                    key["key"] == "number" for key in self.score_manager.player_number_inputs[-1:]
+                )
+                missed_position = current_correct_response["position"] is not None and not any(
+                    key["key"] == "position" for key in self.score_manager.player_position_inputs[-1:]
+                )
                 timestamp = datetime.now().isoformat()
 
                 if missed_number:
