@@ -107,22 +107,30 @@ class RandomGenerator:
         return duplicated_list
 
 
-    def generate_correct_responses(self, n_back_num_list, n_back_coord_list, n_back, display_number_time ):
+    def generate_correct_responses(self, n_back_num_list, n_back_coord_list, n_back):
 
-        """ Generate a dictionary of correct responses with time stamp,
-        position and number recorded to determine score and for tests"""
-
+        """ Returns a dictionary of expected correct responses for easy comparison to player_responses:
+        where expected_position_key is 'g' if position is a repeat, else None;
+        and expected_number_key is 'j' if number is a repeat, else None.
+        """
         correct_responses = {}
-        current_time = 0
 
         for i in range(len(n_back_num_list)):
-            correct_responses[i] = {
-                "timestamp": current_time,
-                "number": n_back_num_list[i] if i >= n_back and n_back_num_list[i] == n_back_num_list[i - n_back] else None,
-                "position": n_back_coord_list[i] if i >= n_back and n_back_coord_list[i] == n_back_coord_list[i - n_back] else None,
-            }
-            current_time += display_number_time
+            # Determine if there is a position match
+            if i >= n_back and n_back_coord_list[i] == n_back_coord_list[i - n_back]:
+                expected_position_key = 'g'
+            else:
+                expected_position_key = None
+            # Determine if there is number match
+            if i >= n_back and n_back_num_list[i] == n_back_num_list[i - n_back]:
+                expected_number_key = 'j'
+            else:
+                expected_number_key = None
+
+            correct_responses[i] = (expected_position_key, expected_number_key)
+
         return correct_responses
+
 
 if __name__ == "__main__":
     n = int(input("Enter n-back number: "))
@@ -131,5 +139,5 @@ if __name__ == "__main__":
     rand.random_index_generator()
     n_back_num_list, n_back_coord_list = rand.random_list_generator()
 
-    correct_responses = rand.generate_correct_responses(n_back_num_list, n_back_coord_list, n, display_number_time)
+    correct_responses = rand.generate_correct_responses(n_back_num_list, n_back_coord_list, n)
     pprint.pprint(correct_responses)

@@ -152,6 +152,8 @@ class GamePlayState(State):
         self.current_round_num = 0
         self.num_per_round = 10
         self.num_count = 0
+        # Initialise dictionary of player responses for comparison to expected correct_responses
+        self.player_responses = {}
 
         # Number and coordinate for display variables
         self.current_number = None
@@ -206,31 +208,20 @@ class GamePlayState(State):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_g, pygame.K_j):
-                    key_pressed = "position" if event.key == pygame.K_g else "number"
-                    input_time = pygame.time.get_ticks()
+                    # Indentify the current event index (last one displayed)
+                    current_event_index = self.num_count -1
+                    if current_event_index in self.player_responses:
+                        current_position_key, current_number_key = self.player_responses[current_event_index]
 
-                    # Only first key press should be accepted
-                    if key_pressed == "position" and self.score_manager.player_position_inputs[-1:]:
-                        continue
-                    if key_pressed == "number" and self.score_manager.player_number_inputs[-1:]:
-                        continue
+                        # Only record the first key press from player
+                        if current_position_key is None and current_number_key is None:
+                            if event.key == pygame.K_g:
+                                # g pressed for position
+                                self.player_responses[current_event_index] = ('g', None)
+                            if event.key == pygame.K_j:
+                                # j pressed for number
+                                self.player_responses[current_event_index] = (None, 'j')
 
-                    # Validate responses against correct_responses
-                    current_correct_response = self.correct_responses[self.num_count -1]
-                    is_correct = int(
-                        key_pressed == "position" and current_correct_response["position"] is not None,
-                        key_pressed == "number" and current_correct_response["number"] is not None
-                    )
-                    logging.info(f"Key press '{key_pressed}' correctness: {is_correct}")
-                    self.score_manager.add_player_input(input_time, key_pressed)
-                    self.data_manager.save_response(
-                        datetime.now().isoformat(),
-                        key_pressed,
-                        is_correct,
-                        0 # missed count for this key press is 0
-                    )
-                    if is_correct:
-                        self.correct_count += 1
 
     def update(self, dt):
         """Update the game logic"""
@@ -253,18 +244,18 @@ class GamePlayState(State):
         if self.current_number is None:
             # Check if it's time to display new number
             if current_time - self.last_number_time >= self.display_number_time:
-                # Ensure there are enough pre-computed coords and numbers
-                if self.num_count < len(self.n_back_numbers) and self.num_count < len(self.n_back_coords):
+                if self.num_count < len(self.n_back_numbers):
                     self.current_number = self.n_back_numbers[self.num_count]
                     self.current_coord = self.n_back_coords[self.num_count]
-
                     self.last_number_time = current_time
-                    self.num_count += 1
 
-                    # Add generated data to ScoreManager and DataManager
-                    self.score_manager.add_generated_data(self.current_number, self.current_coord)
-                    timestamp = self.correct_responses[self.num_count -1]["timestamp"]
-                    self.data_manager.save_generated_data(timestamp, self.current_number, self.current_coord)
+                    #Initialise player_responses for this event
+                    self.player_responses[self.num_count] = (None, None)
+
+                    # # Add generated data to ScoreManager and DataManager
+                    # self.score_manager.add_generated_data(self.current_number, self.current_coord)
+                    # timestamp = self.correct_responses[self.num_count -1]["timestamp"]
+                    # self.data_manager.save_generated_data(timestamp, self.current_number, self.current_coord)
 
                     # Play audio files
                     if self.current_number in self.audio_files:

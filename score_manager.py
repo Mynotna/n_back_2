@@ -16,7 +16,7 @@ class ScoreManager:
             self.player_number_inputs.append(player_response)
 
 
-    def evaluate_responsed(self, index):
+    def evaluate_responses(self, index):
         # Check if the player made a response for number
         if index < len(self.player_number_inputs):
             if self.n_back_num_list[index] == self.player_inputs[index]:
