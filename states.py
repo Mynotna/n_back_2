@@ -305,9 +305,33 @@ class GamePlayState(State):
 
     def end_game(self):
         """calculate results and transition to GameResultState"""
-        session_results = {"correct": self.correct_count, "missed": self.missed_count}
-        self.game.transition_to_Game_result_state(session_results)
-        print(f"Transition to Results screen code ran: {session_results}")
+        results = self.score_manager.evaluate_score()
+
+        # save each event to the database now results are known
+        for i, event_data in self.correct_responses.items():
+            # event_data contains {"number", "coord", "expected_position_key", "expected_number_key"}
+            player_pos, player_num = self.player_responses.get(i, (None, None))
+
+            # Classify correctness for number and position
+            pos_result = self.score_manager.classify_key(event_data["expected_position"], player_pos)
+            num_result = self.score_manager.classify_key(event_data["expected_number"], player_num)
+
+            self.data_manager.save_game_event(
+                game_id= 1,
+                event_index= i,
+                n_back_value= self.random_gen.n,
+                actual_number= event_data["number"],
+                player_number_response= 1 if player_num == "j" else None,
+                number_status= num_result,
+                actual_position= self.event_data["coord"],
+                player_position_response= self.event_data["coord"] if player_pos == "g" else None,
+                position_status= pos_result
+            )
+
+            # Transition to the result state
+        session_results = {"correct": results["correct"], "missed": results["missed_count"]}
+        self.game.transition_to_game_result_state(session_results)
+        print(f"Transition game results screen successful: {session_results}")
 
 
     def __del__(self):
@@ -383,15 +407,6 @@ class FinishState(State):
         self.aggregated_results = None
 
 
-    # def reset(self, session_results, aggregated_results):
-    #     """Reinitialize the state with results"""
-    #     self.start_time = pygame.time.get_ticks()
-    #     self.show_play_again_text = False
-    #     self.session_results = session_results
-    #     self.aggregated_results = aggregated_results
-    #     print("FinishState reset with the new results.")
-
-
     def handle_events(self, events):
         super().handle_events(events)
         for event in events:
@@ -402,13 +417,6 @@ class FinishState(State):
                     self.game.current_state = self.game.states["IntroState"]
                 elif self.button_rects["exit"].collidepoint(event.pos):
                     self.game.running = False
-
-
-    # def update(self, dt):
-    #     current_time = pygame.time.get_ticks()
-    #     elapsed_time = current_time - self.start_time
-    #     if elapsed_time >= self.play_again_delay:
-    #         self.show_play_again_text = True
 
 
     def render(self, screen):

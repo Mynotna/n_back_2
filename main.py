@@ -40,7 +40,7 @@ class Game:
         self.current_state = self.states["IntroState"]
 
 
-    def transition_to_Game_result_state(self, session_results):
+    def transition_to_game_result_state(self, session_results):
         """
                 Transition to GameResultState after a game session ends.
                 Updates aggregated results and creates a new GameResultState instance.

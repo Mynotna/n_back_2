@@ -40,7 +40,11 @@ class ScoreManager:
        missed_count = 0
        incorrect_count = 0
 
-       for i, (exp_pos, exp_num) in self.correct_responses.items():
+       for i, event_data in self.correct_responses.items():
+           # Extract expected keys
+           exp_pos = event_data["expected_position"]
+           exp_num = event_data["expected_number"]
+
            pl_pos, pl_num = self.player_responses.get(i, (None, None))
 
            pos_result = self.classify_key(exp_pos, pl_pos)
