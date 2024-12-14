@@ -1,37 +1,79 @@
 import json
 
 class ScoreManager:
-    def __init__(self, n_back, n_back_num_list, n_back_coord_list):
-        self.n_back = n_back
-        self.n_back_num_list = n_back_num_list
-        self.n_back_coord_list = n_back_coord_list
-        self.player_number_inputs = []
-        self.player_position_inputs = []
+    def __init__(self, player_responses, correct_responses):
+
+        """The ScoreManager receives a dictionary (self.player_responses) from GamePlayState,
+        and a correct_responses dictionary from RandomGenerator class and compares the two. They both should have
+        exactly the same format for comparison and scoring, i.e.
+        {
+        0: (None, None),
+        1: (j, None),
+        2: (None, g)
+        ditto
+        }
+        """
+        # Initialise player_responses dictionary from GamePlayState class
+        self.player_responses = player_responses
+        # Initialise correct_responses dictionary from Random_gen class
+        self.correct_responses = correct_responses
 
 
-    def player_inputs(self, player_response, response_type):
-        if response_type == "number":
-            self.player_number_inputs.append(player_response)
-        elif response_type == "position":
-            self.player_number_inputs.append(player_response)
+    def classify_key(self, expected, actual):
+        """ Sorts a single key comparison:
+        expected or actual are either None, 'g', or 'j'
+        Returns: 'correct', 'missed', 'incorrect'.
+        """
+        if expected == actual:
+            return 'correct'
+        elif expected is None and actual is not None:
+            return 'incorrect'
+        elif expected is not None and actual is None:
+            return 'missed'
+        else:
+            return 'incorrect'
+    def evaluate_score(self):
+       """This evaluates the player's score by comparing two dictionaries, one from the GamePlayState (player_responses),
+       the other from RandomGenerator (correct_responses).
+       """
+       correct_count = 0
+       missed_count = 0
+       incorrect_count = 0
+
+       for i, (exp_pos, exp_num) in self.correct_responses.items():
+           pl_pos, pl_num = self.player_responses.get(i, (None, None))
+
+           pos_result = self.classify_key(exp_pos, pl_pos)
+           num_result = self.classify_key(exp_num, pl_num)
 
 
-    def evaluate_responses(self, index):
-        # Check if the player made a response for number
-        if index < len(self.player_number_inputs):
-            if self.n_back_num_list[index] == self.player_inputs[index]:
-                number_status = "correct"
-            else:
-                number_status = "incorrect"
+           # Assign correctness scores: correct = 1, incorrect = 0, missed = 0
+           pos_score = 1 if pos_result == 'correct' else 0
+           num_score = 1 if num_result == 'correct' else 0
+           total_score = pos_score + num_score
 
-        # Check if the player made a response for position
-        if index < len(self.player_position_inputs):
-            if self.n_back_coord_list == self.player_position_inputs:
-                position_status = "correct"
-            else:
-                position_status = "incorrect"
+           correct_count = total_score
 
-        return number_status, position_status
+           for result in [pos_result, num_result]:
+               if result == 'missed':
+                   missed_count += 1
+               elif result == 'incorrect':
+                   incorrect_count += 1
+       return {'correct': correct_count, 'missed_count': missed_count, 'incorrect': incorrect_count}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -116,18 +116,22 @@ class RandomGenerator:
         correct_responses = {}
 
         for i in range(len(n_back_num_list)):
-            # Determine if there is a position match
-            if i >= n_back and n_back_coord_list[i] == n_back_coord_list[i - n_back]:
+            if i > n_back and n_back_coord_list[i] == n_back_coord_list[i - n_back]:
                 expected_position_key = 'g'
             else:
                 expected_position_key = None
-            # Determine if there is number match
-            if i >= n_back and n_back_num_list[i] == n_back_num_list[i - n_back]:
+
+            if i > n_back and n_back_num_list[i] == n_back_num_list[i - n_back]:
                 expected_number_key = 'j'
             else:
                 expected_number_key = None
 
-            correct_responses[i] = (expected_position_key, expected_number_key)
+            correct_responses[i] = {
+                "number": n_back_num_list[i],
+                "coord": n_back_coord_list[i],
+                "expected_position_key": expected_position_key,
+                "expected_number_key": expected_number_key
+            }
 
         return correct_responses
 

@@ -27,7 +27,7 @@ class DataManager:
                     number_response_status TEXT CHECK(number_response_status IN("correct", "incorrect", "missed")),
                     actual_position TEXT NOT NULL,
                     player_position_response TEXT,
-                    position_response_status TEXT CHECK(position_response_status IN("correct", "incorrect", "missed"))
+                    position_response_status TEXT CHECK(position_response_status IN("correct", "incorrect", "missed")),
                     FOREIGN KEY(session_id) REFERENCES sessions(session_id)
                 )
             ''')

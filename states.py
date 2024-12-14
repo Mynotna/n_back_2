@@ -136,30 +136,36 @@ class GamePlayState(State):
         self.game_box_rect = self.game_box.get_rect(center=(WIDTH / 2, HEIGHT / 2))
         self.font = self.game.resources.fonts["main"]
 
-        # Initialise RandomGenerator and get n_back lists
+        # Initialise RandomGenerator and get n_back lists for displaying numbers in positions, and correct_responses
+        # to call score_manager
         n_back_value = 2
         self.random_gen = RandomGenerator(n=n_back_value)
         self.n_back_numbers, self.n_back_coords = self.random_gen.random_list_generator()
+        self.correct_responses = self.random_gen.generate_correct_responses(
+            self.n_back_numbers,
+            self.n_back_coords,
+            n_back_value
+        )
 
-        # correct_count = 0
+        self.correct_count = 0
         self.missed_count = 0
+
+        # Initialise player response dictionary
+        self.player_responses = {}
+
+        # Number and coordinate for display variables
+
+        self.display_number_time = 1500
+        self.last_number_time = pygame.time.get_ticks()
+        self.num_count = 0
+
+        # Current event's data
+        self.current_number = None
+        self.current_coord = None
 
         #Get audio files
         self.audio_files = game.resources.sounds
 
-        # Initialise round variables
-        self.num_of_rounds = 3
-        self.current_round_num = 0
-        self.num_per_round = 10
-        self.num_count = 0
-        # Initialise dictionary of player responses for comparison to expected correct_responses
-        self.player_responses = {}
-
-        # Number and coordinate for display variables
-        self.current_number = None
-        self.current_coord = None
-        self.display_number_time = 1500
-        self.last_number_time = pygame.time.get_ticks()
 
         # Get countdown images and put in list
         self.count_down_images = [
@@ -174,7 +180,7 @@ class GamePlayState(State):
 
         #Initialise DataManager and ScoreManager
         self.data_manager = DataManager()
-        self.score_manager = ScoreManager(n_back=2)
+        self.score_manager = ScoreManager(self.player_responses, self.correct_responses)
 
         # Start a new session
         self.data_manager.start_new_session()
@@ -245,17 +251,16 @@ class GamePlayState(State):
             # Check if it's time to display new number
             if current_time - self.last_number_time >= self.display_number_time:
                 if self.num_count < len(self.n_back_numbers):
-                    self.current_number = self.n_back_numbers[self.num_count]
-                    self.current_coord = self.n_back_coords[self.num_count]
+                    event_data = self.correct_responses[self.num_count]
+                    self.current_number = event_data["number"]
+                    self.current_coord = event_data["coord"]
                     self.last_number_time = current_time
 
-                    #Initialise player_responses for this event
+                    #Initialise player_responses for this event index
                     self.player_responses[self.num_count] = (None, None)
 
-                    # # Add generated data to ScoreManager and DataManager
-                    # self.score_manager.add_generated_data(self.current_number, self.current_coord)
-                    # timestamp = self.correct_responses[self.num_count -1]["timestamp"]
-                    # self.data_manager.save_generated_data(timestamp, self.current_number, self.current_coord)
+                    # Increment self.num_count since new event just started
+                    self.num_count += 1
 
                     # Play audio files
                     if self.current_number in self.audio_files:
@@ -273,22 +278,6 @@ class GamePlayState(State):
                 self.current_number = None
                 self. current_coord = None
 
-                # Check for missed responses after each number disappears
-                current_correct_response = self.correct_responses[self.num_count -1]
-                missed_number = current_correct_response["number"] is not None and not any(
-                    key["key"] == "number" for key in self.score_manager.player_number_inputs[-1:]
-                )
-                missed_position = current_correct_response["position"] is not None and not any(
-                    key["key"] == "position" for key in self.score_manager.player_position_inputs[-1:]
-                )
-                timestamp = datetime.now().isoformat()
-
-                if missed_number:
-                    self.data_manager.save_response(timestamp, 'number', 0, 1)
-                    self.missed_count += 1
-                if missed_position:
-                    self.data_manager.save_response(timestamp, 'position', 0, 1)
-                    self.missed_count += 1
 
 
     def count_down(self):
