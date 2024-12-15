@@ -147,15 +147,23 @@ class GamePlayState(State):
             n_back_value
         )
 
-        self.correct_count = 0
-        self.missed_count = 0
-
         # Initialise player response dictionary
         self.player_responses = {}
 
-        # Number and coordinate for display variables
+        # Initialise instances DataManager and ScoreManager
+        self.data_manager = DataManager()
+        self.score_manager = ScoreManager(self.player_responses, self.correct_responses)
 
-        self.display_number_time = 1500
+        # Start new session
+        self.data_manager.start_new_session()
+
+        # Game and session tracking
+        self.num_per_game = len(self.correct_responses)
+        self.games_per_session = 10
+        self.game_count = 0
+
+        # Timing and display
+        self.display_number_time = 200
         self.last_number_time = pygame.time.get_ticks()
         self.num_count = 0
 
@@ -178,10 +186,6 @@ class GamePlayState(State):
         self.current_countdown_index = 0
         self.count_down_start_time = 0
 
-        #Initialise DataManager and ScoreManager
-        self.data_manager = DataManager()
-        self.score_manager = ScoreManager(self.player_responses, self.correct_responses)
-
         # Start a new session
         self.data_manager.start_new_session()
 
@@ -196,7 +200,8 @@ class GamePlayState(State):
         self.missed_count = 0
 
         self.num_count = 0
-        self.num_per_round = 10
+        self.num_per_game = 10
+        self.games_per_session = 10
 
         self.current_number = None
         self.current_coord = None
@@ -224,9 +229,13 @@ class GamePlayState(State):
                             if event.key == pygame.K_g:
                                 # g pressed for position
                                 self.player_responses[current_event_index] = ('g', None)
+                                logger.info(f"g pressed: {current_event_index}")
+
                             if event.key == pygame.K_j:
                                 # j pressed for number
                                 self.player_responses[current_event_index] = (None, 'j')
+                                logger.info(f"j pressed: {current_event_index}")
+                        logger.info(f"player_responses: {self.player_responses}")
 
 
     def update(self, dt):
@@ -246,7 +255,7 @@ class GamePlayState(State):
         # Handle other game updates
         super().update(dt)
 
-        # Display new number if none currently displayed
+        # Display new number if none currently displayed using correct_responses dict from RandomGenerator
         if self.current_number is None:
             # Check if it's time to display new number
             if current_time - self.last_number_time >= self.display_number_time:
@@ -277,7 +286,6 @@ class GamePlayState(State):
             if current_time - self.last_number_time >= self.display_number_time:
                 self.current_number = None
                 self. current_coord = None
-
 
 
     def count_down(self):
@@ -313,18 +321,19 @@ class GamePlayState(State):
             player_pos, player_num = self.player_responses.get(i, (None, None))
 
             # Classify correctness for number and position
-            pos_result = self.score_manager.classify_key(event_data["expected_position"], player_pos)
-            num_result = self.score_manager.classify_key(event_data["expected_number"], player_num)
+            pos_result = self.score_manager.classify_key(event_data["expected_position_key"], player_pos)
+            num_result = self.score_manager.classify_key(event_data["expected_number_key"], player_num)
 
             self.data_manager.save_game_event(
+                session_id=
                 game_id= 1,
                 event_index= i,
                 n_back_value= self.random_gen.n,
                 actual_number= event_data["number"],
                 player_number_response= 1 if player_num == "j" else None,
                 number_status= num_result,
-                actual_position= self.event_data["coord"],
-                player_position_response= self.event_data["coord"] if player_pos == "g" else None,
+                actual_position= event_data["coord"],
+                player_position_response= event_data["coord"] if player_pos == "g" else None,
                 position_status= pos_result
             )
 

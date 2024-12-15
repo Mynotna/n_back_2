@@ -20,6 +20,7 @@ class DataManager:
                 CREATE TABLE IF NOT EXISTS game_events (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     session_id INTEGER NOT NULL,
+                    game_id INTEGER NOT NULL,
                     event_index INTEGER NOT NULL,
                     n_back_value INTEGER NOT NULL,
                     actual_value INTEGER NOT NULL,

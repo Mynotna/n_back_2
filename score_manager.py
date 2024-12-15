@@ -42,8 +42,8 @@ class ScoreManager:
 
        for i, event_data in self.correct_responses.items():
            # Extract expected keys
-           exp_pos = event_data["expected_position"]
-           exp_num = event_data["expected_number"]
+           exp_pos = event_data["expected_position_key"]
+           exp_num = event_data["expected_number_key"]
 
            pl_pos, pl_num = self.player_responses.get(i, (None, None))
 
