@@ -200,15 +200,17 @@ class GamePlayState(State):
         self.missed_count = 0
 
         self.num_count = 0
-        self.num_per_game = 10
-        self.games_per_session = 10
+        # self.num_per_game = 10
+        # self.games_per_session = 10
 
         self.current_number = None
         self.current_coord = None
-        self.coord_index = 0
+        # self.coord_index = 0
 
         self.display_number_time = 1500
         self.last_number_time = pygame.time.get_ticks()
+
+        self.player_responses.clear()
 
         # Trigger countdown
         self.count_down()
@@ -325,8 +327,8 @@ class GamePlayState(State):
             num_result = self.score_manager.classify_key(event_data["expected_number_key"], player_num)
 
             self.data_manager.save_game_event(
-                session_id=
-                game_id= 1,
+                session_id=self.data_manager.session_id,
+                game_id= self.game_count,
                 event_index= i,
                 n_back_value= self.random_gen.n,
                 actual_number= event_data["number"],
@@ -338,9 +340,17 @@ class GamePlayState(State):
             )
 
             # Transition to the result state
-        session_results = {"correct": results["correct"], "missed": results["missed_count"]}
-        self.game.transition_to_game_result_state(session_results)
-        print(f"Transition game results screen successful: {session_results}")
+        session_results = {
+            "correct": results["correct"],
+            "missed": results["missed_count"]
+        }
+        if self.game_count >= self.games_per_session:
+            #Aggregate results
+            aggregated_results = {"correct": results["correct"], "missed": results["missed_count"]}
+            session_rank = 1
+            self.game.transition_to_finish_state(session_results)
+        else:
+            self.game.transition_to_game_result_state(session_results)
 
 
     def __del__(self):

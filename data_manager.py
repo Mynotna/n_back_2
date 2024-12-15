@@ -41,7 +41,7 @@ class DataManager:
         self.conn.commit()
 
 
-    def save_game_event(self, game_id, event_index, n_back_value, actual_number,
+    def save_game_event(self, session_id, game_id, event_index, n_back_value, actual_number,
                         player_number_response, number_status, actual_position, player_position_response,
                         position_status):
         self.cursor.execute('''
