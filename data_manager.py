@@ -91,4 +91,17 @@ class DataManager:
 
 if __name__ == "__main__":
     dm = DataManager()
-    print("game_data.db tables created successfully")
+    dm.start_new_session()
+    dm.save_game_event(
+        session_id=dm.session_id,
+        game_id=1,
+        event_index=0,
+        n_back_value=2,
+        actual_number=5,
+        player_number_response=1,
+        number_response_status="correct",
+        actual_position=(100, 200),
+        player_position_response=None,
+        position_response_status="missed"
+    )
+print("Game event saved successfully.")

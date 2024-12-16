@@ -144,14 +144,6 @@ class GamePlayState(State):
         # self.reset()
 
 
-    def generate_new_sequences(self):
-        """Generate new sequences of numbers and coordinates per game"""
-        self.n_back_numbers, self.n_back_coords = self.random_gen.random_list_generator()
-        self.correct_responses = self.random_gen.generate_correct_responses(
-            self.n_back_numbers,
-            self.n_back_coords,
-            self.n_back_value
-        )
 
         # Initialise player response dictionary
         self.player_responses = {}
@@ -180,7 +172,6 @@ class GamePlayState(State):
         #Get audio files
         self.audio_files = self.game.resources.sounds
 
-
         # Get countdown images and put in list
         self.count_down_images = [
             self.game.resources.images["ct_dwn_3"],
@@ -195,6 +186,14 @@ class GamePlayState(State):
         # Start a new session
         self.data_manager.start_new_session()
 
+    def generate_new_sequences(self):
+        """Generate new sequences of numbers and coordinates per game"""
+        self.n_back_numbers, self.n_back_coords = self.random_gen.random_list_generator()
+        self.correct_responses = self.random_gen.generate_correct_responses(
+            self.n_back_numbers,
+            self.n_back_coords,
+            self.n_back_value
+        )
     def reset(self):
         """Reset the game logic for a new round."""
         # Score counting variables
@@ -207,7 +206,6 @@ class GamePlayState(State):
 
         self.current_number = None
         self.current_coord = None
-        # self.coord_index = 0
 
         self.display_number_time = 200
         self.last_number_time = pygame.time.get_ticks()
@@ -287,7 +285,10 @@ class GamePlayState(State):
                             logging.error(f"No audio files to play")
                 else:
                     # No more coords or numbers. Bring game to an end
+                    self.game_count += 1
+                    logger.info(f"game_count: {self.game_count}")
                     self.end_game()
+
         else:
             # Clear the number after display time expires
             if current_time - self.last_number_time >= self.display_number_time:
