@@ -138,13 +138,19 @@ class GamePlayState(State):
 
         # Initialise RandomGenerator and get n_back lists for displaying numbers in positions, and correct_responses
         # to call score_manager
-        n_back_value = 2
-        self.random_gen = RandomGenerator(n=n_back_value)
+        self.n_back_value = 2
+        self.random_gen = RandomGenerator(n=self.n_back_value)
+        self.generate_new_sequences()
+        # self.reset()
+
+
+    def generate_new_sequences(self):
+        """Generate new sequences of numbers and coordinates per game"""
         self.n_back_numbers, self.n_back_coords = self.random_gen.random_list_generator()
         self.correct_responses = self.random_gen.generate_correct_responses(
             self.n_back_numbers,
             self.n_back_coords,
-            n_back_value
+            self.n_back_value
         )
 
         # Initialise player response dictionary
@@ -172,7 +178,7 @@ class GamePlayState(State):
         self.current_coord = None
 
         #Get audio files
-        self.audio_files = game.resources.sounds
+        self.audio_files = self.game.resources.sounds
 
 
         # Get countdown images and put in list
@@ -189,10 +195,6 @@ class GamePlayState(State):
         # Start a new session
         self.data_manager.start_new_session()
 
-        # Call reset to initialize game logic variables
-        self.reset()
-
-
     def reset(self):
         """Reset the game logic for a new round."""
         # Score counting variables
@@ -200,17 +202,20 @@ class GamePlayState(State):
         self.missed_count = 0
 
         self.num_count = 0
-        # self.num_per_game = 10
-        # self.games_per_session = 10
+        self.num_per_game = 10
+        self.games_per_session = 10
 
         self.current_number = None
         self.current_coord = None
         # self.coord_index = 0
 
-        self.display_number_time = 1500
+        self.display_number_time = 200
         self.last_number_time = pygame.time.get_ticks()
 
         self.player_responses.clear()
+
+        # Create new coordinate and number lists
+        self.generate_new_sequences()
 
         # Trigger countdown
         self.count_down()
@@ -333,10 +338,10 @@ class GamePlayState(State):
                 n_back_value= self.random_gen.n,
                 actual_number= event_data["number"],
                 player_number_response= 1 if player_num == "j" else None,
-                number_status= num_result,
+                number_response_status= num_result,
                 actual_position= event_data["coord"],
                 player_position_response= event_data["coord"] if player_pos == "g" else None,
-                position_status= pos_result
+                position_response_status= pos_result
             )
 
             # Transition to the result state

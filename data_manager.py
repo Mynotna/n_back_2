@@ -2,6 +2,7 @@ import sqlite3
 import json
 from datetime import datetime
 
+
 class DataManager:
     def __init__(self, db_name='n_back_data.db'):
         self.conn = sqlite3.connect(db_name)
@@ -23,7 +24,7 @@ class DataManager:
                     game_id INTEGER NOT NULL,
                     event_index INTEGER NOT NULL,
                     n_back_value INTEGER NOT NULL,
-                    actual_value INTEGER NOT NULL,
+                    actual_number INTEGER NOT NULL,
                     player_number_response INTEGER,
                     number_response_status TEXT CHECK(number_response_status IN("correct", "incorrect", "missed")),
                     actual_position TEXT NOT NULL,
@@ -41,19 +42,45 @@ class DataManager:
         self.conn.commit()
 
 
-    def save_game_event(self, session_id, game_id, event_index, n_back_value, actual_number,
-                        player_number_response, number_status, actual_position, player_position_response,
-                        position_status):
+    def save_game_event(self,
+                        session_id,
+                        game_id,
+                        event_index,
+                        n_back_value,
+                        actual_number,
+                        player_number_response,
+                        number_response_status,
+                        actual_position,
+                        player_position_response,
+                        position_response_status
+        ):
+
         self.cursor.execute('''
         INSERT INTO game_events (
-        session_id, game_id, event_index, n_back_value, actual_number,
-        player_number_response, number_status, actual_position, player_position_response,
-        position_status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''',(
-            self.session_id, game_id, event_index, n_back_value,
-            actual_number, player_number_response, number_status,
-            json.dumps(actual_position), json.dumps(player_position_response), position_status
+        session_id, 
+        game_id, 
+        event_index, 
+        n_back_value, 
+        actual_number,
+        player_number_response, 
+        number_response_status, 
+        actual_position, 
+        player_position_response,
+        position_response_status
+        ) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''',
+        (
+            self.session_id,
+            game_id,
+            event_index,
+            n_back_value,
+            actual_number,
+            player_number_response,
+            number_response_status,
+            json.dumps(actual_position),
+            json.dumps(player_position_response),
+            position_response_status
         ))
         self.conn.commit()
 
