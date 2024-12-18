@@ -53,7 +53,7 @@ class Game:
         self.current_state = self.states["GameResultState"]
 
 
-    def transition_to_finish_state(self):
+    def transition_to_finish_state(self, session_results):
         """Transition to FinishState where all results are displayed
         Included aggregated results"""
 

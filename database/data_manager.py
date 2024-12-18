@@ -84,7 +84,6 @@ class DataManager:
         ))
         self.conn.commit()
 
-
     def close(self):
         self.conn.close()
 

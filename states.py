@@ -1,13 +1,10 @@
-import logging
-import random
 import pygame
 import pygame.time
 import pygame.mixer
 
-from data_manager import DataManager
+from database.data_manager import DataManager
 from random_gen import RandomGenerator
 from score_manager import ScoreManager
-from datetime import datetime
 
 from resources import ResourceManager
 
