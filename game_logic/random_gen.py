@@ -1,6 +1,6 @@
 import random
-from random import sample, randint, choice
-from resources import ResourceManager
+from random import randint, choice
+from game_logic.resource_manager import ResourceManager
 import logging
 import pprint
 

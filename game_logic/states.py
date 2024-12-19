@@ -3,12 +3,12 @@ import pygame.time
 import pygame.mixer
 
 from database.data_manager import DataManager
-from random_gen import RandomGenerator
-from score_manager import ScoreManager
+from game_logic.random_gen import RandomGenerator
+from game_logic.score_manager import ScoreManager
 
-from resources import ResourceManager
+from game_logic.resource_manager import ResourceManager
 
-from settings import WIDTH, HEIGHT, COLOR
+from config.config import WIDTH, HEIGHT, COLOR
 
 import logging
 
