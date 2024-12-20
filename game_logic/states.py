@@ -162,6 +162,9 @@ class GamePlayState(State):
         self.last_number_time = pygame.time.get_ticks()
         self.num_count = 0
 
+        # Initialise event_timer to record response time
+        self. event_start_time = pygame.time.get_ticks()
+
         # Current event's data
         self.current_number = None
         self.current_coord = None
@@ -231,12 +234,18 @@ class GamePlayState(State):
                             if event.key == pygame.K_g:
                                 # g pressed for position
                                 self.player_responses[current_event_index] = ('g', None)
-                                logger.info(f"g pressed: {current_event_index}")
+                                # Get response time for g
+                                response_time_ms = pygame.time.get_ticks() - self.event_start_time
+                                response_time_sec = response_time_ms / 1000.0
+                                logger.info(f"g pressed: {current_event_index}/nResponse time for g: {response_time_sec}")
 
                             if event.key == pygame.K_j:
                                 # j pressed for number
                                 self.player_responses[current_event_index] = (None, 'j')
-                                logger.info(f"j pressed: {current_event_index}")
+                                # Get response time for j
+                                response_time_ms = pygame.time.get_ticks() - self.event_start_time
+                                response_time_sec = response_time_ms / 1000.0
+                                logger.info(f"j pressed: {current_event_index}/n Response time: {response_time_sec} ")
                         logger.info(f"player_responses: {self.player_responses}")
 
 
@@ -272,6 +281,8 @@ class GamePlayState(State):
 
                     # Increment self.num_count since new event just started
                     self.num_count += 1
+
+                    self.event_start_time = pygame.time.get_ticks()
 
                     # Play audio files
                     if self.current_number in self.audio_files:
