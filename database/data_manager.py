@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class DataManager:
-    def __init__(self, db_name='n_back_data.db'):
+    def __init__(self, db_name='n_back_scores.db'):
         self.conn = sqlite3.connect(db_name)
         self.cursor = self.conn.cursor()
         self.create_tables()
@@ -20,6 +20,7 @@ class DataManager:
             self.cursor.execute('''
                 CREATE TABLE IF NOT EXISTS game_events (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    player_id TEXT NOT NULL,
                     session_id INTEGER NOT NULL,
                     game_id INTEGER NOT NULL,
                     event_index INTEGER NOT NULL,
@@ -30,6 +31,8 @@ class DataManager:
                     actual_position TEXT NOT NULL,
                     player_position_response TEXT,
                     position_response_status TEXT CHECK(position_response_status IN("correct", "incorrect", "missed")),
+                    position_response_time REAL NOT NULL,
+                    number_response_time REAL NOT NULL,
                     FOREIGN KEY(session_id) REFERENCES sessions(session_id)
                 )
             ''')
@@ -43,6 +46,7 @@ class DataManager:
 
 
     def save_game_event(self,
+                        player_id,
                         session_id,
                         game_id,
                         event_index,
@@ -52,11 +56,14 @@ class DataManager:
                         number_response_status,
                         actual_position,
                         player_position_response,
-                        position_response_status
+                        position_response_status,
+                        position_response_time,
+                        number_response_time
         ):
 
         self.cursor.execute('''
         INSERT INTO game_events (
+        player_id,
         session_id, 
         game_id, 
         event_index, 
@@ -67,10 +74,13 @@ class DataManager:
         actual_position, 
         player_position_response,
         position_response_status
+        position_response_time,
+        number_response_time
         ) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''',
         (
+            player_id,
             self.session_id,
             game_id,
             event_index,
@@ -80,7 +90,9 @@ class DataManager:
             number_response_status,
             json.dumps(actual_position),
             json.dumps(player_position_response),
-            position_response_status
+            position_response_status,
+            position_response_time,
+            number_response_time
         ))
         self.conn.commit()
 
@@ -92,6 +104,7 @@ if __name__ == "__main__":
     dm = DataManager()
     dm.start_new_session()
     dm.save_game_event(
+        player_id="dwindler_987",
         session_id=dm.session_id,
         game_id=1,
         event_index=0,
@@ -101,6 +114,8 @@ if __name__ == "__main__":
         number_response_status="correct",
         actual_position=(100, 200),
         player_position_response=None,
-        position_response_status="missed"
+        position_response_status="missed",
+        position_response_time= 200,
+        number_response_time= 200
     )
 print("Game event saved successfully.")

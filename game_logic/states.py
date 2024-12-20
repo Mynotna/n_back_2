@@ -1,6 +1,9 @@
 import pygame
 import pygame.time
 import pygame.mixer
+import utils.handle_text_input
+import logging
+
 
 from database.data_manager import DataManager
 from game_logic.random_gen import RandomGenerator
@@ -10,7 +13,6 @@ from game_logic.resource_manager import ResourceManager
 
 from config.config import WIDTH, HEIGHT, COLOR
 
-import logging
 
 # configure logger
 logging.basicConfig(level= logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -70,9 +72,18 @@ class IntroState(State):
         #Set flag for showing instruction screen
         self.show_instructions = False
 
+        # Initialise Player id
+        self.player_id = ""
+        # Initialise flag for getting player's name
+        self.asking_for_name = True
+
     def handle_events(self, events):
         super().handle_events(events)
-        for event in events:
+
+        if self.asking_for_name:
+            self.player_id, done = handle_text_input(events, self.player_id)
+
+        else:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.instruct_btn_rect.collidepoint(event.pos):
                     self.show_instructions = True
@@ -183,6 +194,9 @@ class GamePlayState(State):
         self.current_countdown_index = 0
         self.count_down_start_time = 0
 
+        # Player response time variables
+        self.response_times = {}
+
         # Start a new session
         self.data_manager.start_new_session()
 
@@ -236,18 +250,18 @@ class GamePlayState(State):
                                 self.player_responses[current_event_index] = ('g', None)
                                 # Get response time for g
                                 response_time_ms = pygame.time.get_ticks() - self.event_start_time
-                                response_time_sec = response_time_ms / 1000.0
-                                logger.info(f"g pressed: {current_event_index}/nResponse time for g: {response_time_sec}")
+                                position_response_time_sec = response_time_ms / 1000.0
+                                logger.info(f"g pressed: {current_event_index}/nResponse time for g: {position_response_time_sec}")
 
                             if event.key == pygame.K_j:
                                 # j pressed for number
                                 self.player_responses[current_event_index] = (None, 'j')
                                 # Get response time for j
                                 response_time_ms = pygame.time.get_ticks() - self.event_start_time
-                                response_time_sec = response_time_ms / 1000.0
-                                logger.info(f"j pressed: {current_event_index}/n Response time: {response_time_sec} ")
+                                number_response_time_sec = response_time_ms / 1000.0
+                                logger.info(f"j pressed: {current_event_index}/n Response time: {number_response_time_sec} ")
                         logger.info(f"player_responses: {self.player_responses}")
-
+                        self.response_times[current_event_index] = (position_response_time_sec, number_response_time_sec)
 
     def update(self, dt):
         """Update the game logic"""
@@ -340,7 +354,11 @@ class GamePlayState(State):
             pos_result = self.score_manager.classify_key(event_data["expected_position_key"], player_pos)
             num_result = self.score_manager.classify_key(event_data["expected_number_key"], player_num)
 
+            # Get response times
+            pos_response_time, num_response_time = self.response_times[i]
+
             self.data_manager.save_game_event(
+                player_id= "Dwindler_987",
                 session_id=self.data_manager.session_id,
                 game_id= self.game_count,
                 event_index= i,
@@ -350,7 +368,9 @@ class GamePlayState(State):
                 number_response_status= num_result,
                 actual_position= event_data["coord"],
                 player_position_response= event_data["coord"] if player_pos == "g" else None,
-                position_response_status= pos_result
+                position_response_status= pos_result,
+                position_response_time= pos_response_time,
+                number_response_time= num_response_time
             )
 
             # Transition to the result state
