@@ -15,6 +15,9 @@ class Game:
         self.running = True
         self.clock = pygame.time.Clock()
 
+        # Initialise player id
+        self.player_id = None
+
         # Initialize states and results tracking
         self.states = {}
         self.current_state = None

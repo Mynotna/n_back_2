@@ -1,9 +1,8 @@
 import pygame
 import pygame.time
 import pygame.mixer
-import utils.handle_text_input
+from utils.handle_text_input import handle_text_input
 import logging
-
 
 from database.data_manager import DataManager
 from game_logic.random_gen import RandomGenerator
@@ -12,7 +11,6 @@ from game_logic.score_manager import ScoreManager
 from game_logic.resource_manager import ResourceManager
 
 from config.config import WIDTH, HEIGHT, COLOR
-
 
 # configure logger
 logging.basicConfig(level= logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -73,7 +71,10 @@ class IntroState(State):
         self.show_instructions = False
 
         # Initialise Player id
-        self.player_id = ""
+        if self.game.player_id is None:
+            self.game.player_id = ""
+
+
         # Initialise flag for getting player's name
         self.asking_for_name = True
 
@@ -81,14 +82,19 @@ class IntroState(State):
         super().handle_events(events)
 
         if self.asking_for_name:
-            self.player_id, done = handle_text_input(events, self.player_id)
+            updated_text, done = handle_text_input(events, self.game.player_id)
+            self.game.player_id = updated_text
+
+            if done and self.game.player_id.strip():
+                self.asking_for_name = False
 
         else:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.instruct_btn_rect.collidepoint(event.pos):
-                    self.show_instructions = True
-                elif self.enter_btn_rect.collidepoint(event.pos):
-                    self.game.current_state = self.game.states["GamePlayState"]
+            for event in events:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.instruct_btn_rect.collidepoint(event.pos):
+                        self.show_instructions = True
+                    elif self.enter_btn_rect.collidepoint(event.pos):
+                        self.game.current_state = self.game.states["GamePlayState"]
 
     def update(self, dt):
         # Calculate time since start
@@ -99,6 +105,13 @@ class IntroState(State):
 
     def render(self, screen):
         screen.blit(self.bg_image, (0, 0))
+
+        if self.asking_for_name:
+            prompt_text = self.font.render("Enter your name: ", True, (255, 255, 255))
+            screen.blit(prompt_text, (WIDTH /2 - prompt_text.get_width() / 2, HEIGHT / 2 - 100))
+
+            name_text = self.font.render(self.game.player_id, True, (255, 255, 255))
+            screen.blit(name_text, (WIDTH /2 - name_text.get_width() /2, HEIGHT / 2))
 
         # Blit enter button
         if self.show_start_time:
@@ -357,8 +370,11 @@ class GamePlayState(State):
             # Get response times
             pos_response_time, num_response_time = self.response_times[i]
 
+            # Get player_id
+
+
             self.data_manager.save_game_event(
-                player_id= "Dwindler_987",
+                player_id= self.player_id,
                 session_id=self.data_manager.session_id,
                 game_id= self.game_count,
                 event_index= i,
