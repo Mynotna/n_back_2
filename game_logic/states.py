@@ -67,34 +67,47 @@ class IntroState(State):
         self.start_time = pygame.time.get_ticks()
         self.show_start_time = False
 
-        #Set flag for showing instruction screen
+        #Set flags for instruction screen
         self.show_instructions = False
+        self.show_initial_screen = True
+        self.asking_for_name = False
 
         # Initialise Player id
         if self.game.player_id is None:
             self.game.player_id = ""
 
 
-        # Initialise flag for getting player's name
-        self.asking_for_name = True
-
     def handle_events(self, events):
         super().handle_events(events)
 
-        if self.asking_for_name:
-            updated_text, done = handle_text_input(events, self.game.player_id)
-            self.game.player_id = updated_text
 
-            if done and self.game.player_id.strip():
-                self.asking_for_name = False
+        elapsed_time = pygame.time.get_ticks() - self.start_time
+        if elapsed_time >= 2000:
+            self.show_start_time = True
 
-        else:
-            for event in events:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.instruct_btn_rect.collidepoint(event.pos):
-                        self.show_instructions = True
-                    elif self.enter_btn_rect.collidepoint(event.pos):
-                        self.game.current_state = self.game.states["GamePlayState"]
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # if at initial screen only 'Press enter' is shown
+                if self.show_initial_screen and self.show_start_time:
+                    if self.enter_btn_rect.collidepoint(event.pos):
+                        self.show_initial_screen = False
+                        self.asking_for_name = True
+
+                else:
+                    # If name typed, player can see instructions
+                    if (not self.asking_for_name) and self.instruct_btn_rect.collidepoint(event.pos):
+                        self.show_instructions = not self.show_instructions
+
+            elif event.type == pygame.KEYDOWN and self.asking_for_name:
+                updated_text, done = handle_text_input(events, self.game.player_id)
+                self.game.player_id = updated_text
+
+                if done and self.game.player_id.strip():
+                    self.asking_for_name = False
+
+
+
+
 
     def update(self, dt):
         # Calculate time since start
@@ -106,24 +119,26 @@ class IntroState(State):
     def render(self, screen):
         screen.blit(self.bg_image, (0, 0))
 
+        # Blit enter button
+        if not self.show_start_time:
+            return
+
+        # If still on initial screen, show Enter button
+        if self.show_initial_screen:
+            screen.blit(self.enter_btn, self.enter_btn_rect)
+            return
+
+
         if self.asking_for_name:
             prompt_text = self.font.render("Enter your name: ", True, (255, 255, 255))
-            screen.blit(prompt_text, (WIDTH /2 - prompt_text.get_width() / 2, HEIGHT / 2 - 100))
+            screen.blit(prompt_text, (510, 645))
 
             name_text = self.font.render(self.game.player_id, True, (255, 255, 255))
-            screen.blit(name_text, (WIDTH /2 - name_text.get_width() /2, HEIGHT / 2))
+            screen.blit(name_text, (510, 675))
+            return
 
-        # Blit enter button
-        if self.show_start_time:
-            screen.blit(self.enter_btn, self.enter_btn_rect)
-
-            #Blit instruction button only if instructions screen not shown
-            if not self.show_instructions:
-                screen.blit(self.instruct_btn, self.instruct_btn_rect)
-
-            #Blit instruction screen if "show_instruction' flag is True
-            if self.show_instructions:
-                screen.blit(self.instruct_scr, self.instruct_scr_rect)
+        if not self.show_instructions:
+            screen.blit(self.instruct_btn, self.instruct_btn_rect)
 
 class GetReadyState(State):
     def __init__(self, game):
