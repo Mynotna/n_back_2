@@ -44,6 +44,11 @@ class IntroState(State):
         self.bg_image = self.game.resources.images["intro_bg"]
         self.font = self.game.resources.fonts["menu"]
 
+        # font surface and rect for Enter your name button and player
+        self.enter_name_font = self.game.resources.fonts["btn_1"]
+        self.start_game_btn = self.enter_name_font.render("Start game?", True, (200, 255, 255))
+        self.start_game_btn_rect = self.start_game_btn.get_rect(center= (650, 635))
+
         #Load images for Introstate, create rects
         self.instruct_scr = self.game.resources.images["instruct_scr"]
         self.instruct_scr_rect = self.instruct_scr.get_rect(center=(WIDTH /2, HEIGHT /2))
@@ -80,7 +85,6 @@ class IntroState(State):
     def handle_events(self, events):
         super().handle_events(events)
 
-
         elapsed_time = pygame.time.get_ticks() - self.start_time
         if elapsed_time >= 2000:
             self.show_start_time = True
@@ -93,20 +97,22 @@ class IntroState(State):
                         self.show_initial_screen = False
                         self.asking_for_name = True
 
+                    # Start game button event
+                if not self.asking_for_name and not self.show_initial_screen:
+                    if self.start_game_btn_rect.collidepoint(event.pos):
+                        self.game.current_state = self.game.states["GetReadyState"]
+
                 else:
                     # If name typed, player can see instructions
                     if (not self.asking_for_name) and self.instruct_btn_rect.collidepoint(event.pos):
                         self.show_instructions = not self.show_instructions
 
-            elif event.type == pygame.KEYDOWN and self.asking_for_name:
-                updated_text, done = handle_text_input(events, self.game.player_id)
-                self.game.player_id = updated_text
+        if self.asking_for_name:
+            updated_text, done = handle_text_input(events, self.game.player_id)
+            self.game.player_id = updated_text
 
-                if done and self.game.player_id.strip():
-                    self.asking_for_name = False
-
-
-
+            if done and self.game.player_id.strip():
+                self.asking_for_name = False
 
 
     def update(self, dt):
@@ -128,17 +134,21 @@ class IntroState(State):
             screen.blit(self.enter_btn, self.enter_btn_rect)
             return
 
-
         if self.asking_for_name:
-            prompt_text = self.font.render("Enter your name: ", True, (255, 255, 255))
-            screen.blit(prompt_text, (510, 645))
+            prompt_text = self.enter_name_font.render("Type your name and hit enter : ", True, (255, 255, 255))
+            screen.blit(prompt_text, (50, 510))
 
-            name_text = self.font.render(self.game.player_id, True, (255, 255, 255))
-            screen.blit(name_text, (510, 675))
+            name_text = self.enter_name_font.render(self.game.player_id, True, (255, 255, 255))
+            screen.blit(name_text, (prompt_text.get_width() + 60, 510))
+            logger.info(f"Name text: {name_text}: Player_id: {self.game.player_id}")
             return
 
         if not self.show_instructions:
             screen.blit(self.instruct_btn, self.instruct_btn_rect)
+            screen.blit(self.start_game_btn, self.start_game_btn_rect )
+        else:
+            screen.blit(self.instruct_scr, self.instruct_scr_rect)
+
 
 class GetReadyState(State):
     def __init__(self, game):

@@ -2,7 +2,7 @@ import pygame
 
 def handle_text_input(events, current_text):
     for event in events:
-        if event == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
                 # Return the text and flip the flag indicating completion
                 return current_text, True
