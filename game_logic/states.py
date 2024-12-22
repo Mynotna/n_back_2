@@ -283,6 +283,10 @@ class GamePlayState(State):
 
                         # Only record the first key press from player
                         if current_position_key is None and current_number_key is None:
+                            #Initialise response times to None
+                            position_response_time_sec = None
+                            number_response_time_sec = None
+
                             if event.key == pygame.K_g:
                                 # g pressed for position
                                 self.player_responses[current_event_index] = ('g', None)
@@ -294,7 +298,7 @@ class GamePlayState(State):
                             if event.key == pygame.K_j:
                                 # j pressed for number
                                 self.player_responses[current_event_index] = (None, 'j')
-                                # Get response time for j
+                                # Get response time for jg
                                 response_time_ms = pygame.time.get_ticks() - self.event_start_time
                                 number_response_time_sec = response_time_ms / 1000.0
                                 logger.info(f"j pressed: {current_event_index}/n Response time: {number_response_time_sec} ")
@@ -393,13 +397,13 @@ class GamePlayState(State):
             num_result = self.score_manager.classify_key(event_data["expected_number_key"], player_num)
 
             # Get response times
-            pos_response_time, num_response_time = self.response_times[i]
+            pos_response_time, num_response_time = self.response_times[i, (None, None)]
 
             # Get player_id
 
 
             self.data_manager.save_game_event(
-                player_id= self.player_id,
+                player_id= self.game.player_id,
                 session_id=self.data_manager.session_id,
                 game_id= self.game_count,
                 event_index= i,
