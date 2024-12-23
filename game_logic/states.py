@@ -280,6 +280,7 @@ class GamePlayState(State):
                     current_event_index = self.num_count -1
                     if current_event_index in self.player_responses:
                         current_position_key, current_number_key = self.player_responses[current_event_index]
+                        logging.info(f"Player response dictionary: {self.player_responses}")
 
                         # Only record the first key press from player
                         if current_position_key is None and current_number_key is None:
@@ -302,8 +303,8 @@ class GamePlayState(State):
                                 response_time_ms = pygame.time.get_ticks() - self.event_start_time
                                 number_response_time_sec = response_time_ms / 1000.0
                                 logger.info(f"j pressed: {current_event_index}/n Response time: {number_response_time_sec} ")
-                        logger.info(f"player_responses: {self.player_responses}")
-                        self.response_times[current_event_index] = (position_response_time_sec, number_response_time_sec)
+                            logger.info(f"player_responses: {self.player_responses}")
+                            self.response_times[current_event_index] = (position_response_time_sec, number_response_time_sec)
 
     def update(self, dt):
         """Update the game logic"""
@@ -388,6 +389,7 @@ class GamePlayState(State):
         results = self.score_manager.evaluate_score()
 
         # save each event to the database now results are known
+        logger.info(f"Correct responses: {self.correct_responses}")
         for i, event_data in self.correct_responses.items():
             # event_data contains {"number", "coord", "expected_position_key", "expected_number_key"}
             player_pos, player_num = self.player_responses.get(i, (None, None))
@@ -397,7 +399,7 @@ class GamePlayState(State):
             num_result = self.score_manager.classify_key(event_data["expected_number_key"], player_num)
 
             # Get response times
-            pos_response_time, num_response_time = self.response_times[i, (None, None)]
+            pos_response_time, num_response_time = self.response_times.get(i, (None, None))
 
             # Get player_id
 

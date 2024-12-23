@@ -31,8 +31,8 @@ class DataManager:
                     actual_position TEXT NOT NULL,
                     player_position_response TEXT,
                     position_response_status TEXT CHECK(position_response_status IN("correct", "incorrect", "missed")),
-                    position_response_time REAL NOT NULL,
-                    number_response_time REAL NOT NULL,
+                    position_response_time REAL,
+                    number_response_time REAL,
                     FOREIGN KEY(session_id) REFERENCES sessions(session_id)
                 )
             ''')
@@ -73,7 +73,7 @@ class DataManager:
         number_response_status, 
         actual_position, 
         player_position_response,
-        position_response_status
+        position_response_status,
         position_response_time,
         number_response_time
         ) 
