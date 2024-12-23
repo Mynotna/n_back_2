@@ -102,9 +102,8 @@ class IntroState(State):
                     if self.start_game_btn_rect.collidepoint(event.pos):
                         self.game.current_state = self.game.states["GetReadyState"]
 
-                else:
                     # If name typed, player can see instructions
-                    if (not self.asking_for_name) and self.instruct_btn_rect.collidepoint(event.pos):
+                    elif self.instruct_btn_rect.collidepoint(event.pos):
                         self.show_instructions = not self.show_instructions
 
         if self.asking_for_name:
