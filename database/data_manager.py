@@ -1,42 +1,49 @@
 import sqlite3
 import json
 from datetime import datetime
+from tkinter.font import names
+
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import IntegrityError
+
+from .database import SessionLocal
+from .models import Player, Session as SessionModel, GameEvent
+
 
 
 class DataManager:
-    def __init__(self, db_name='n_back_scores.db'):
-        self.conn = sqlite3.connect(db_name)
-        self.cursor = self.conn.cursor()
-        self.create_tables()
-        self.session_id = None
+    def __init__(self):
+        self.session: Session = SessionLocal()
 
-    def create_tables(self):
-            self.cursor.execute('''
-                CREATE TABLE IF NOT EXISTS sessions (
-                    session_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    start_time TEXT NOT NULL
-                )
-            ''')
-            self.cursor.execute('''
-                CREATE TABLE IF NOT EXISTS game_events (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    player_id TEXT NOT NULL,
-                    session_id INTEGER NOT NULL,
-                    game_id INTEGER NOT NULL,
-                    event_index INTEGER NOT NULL,
-                    n_back_value INTEGER NOT NULL,
-                    actual_number INTEGER NOT NULL,
-                    player_number_response INTEGER,
-                    number_response_status TEXT CHECK(number_response_status IN("correct", "incorrect", "missed")),
-                    actual_position TEXT NOT NULL,
-                    player_position_response TEXT,
-                    position_response_status TEXT CHECK(position_response_status IN("correct", "incorrect", "missed")),
-                    position_response_time REAL,
-                    number_response_time REAL,
-                    FOREIGN KEY(session_id) REFERENCES sessions(session_id)
-                )
-            ''')
-            self.conn.commit()
+
+    def add_player(self):
+        """Add a player with a unique name or select an existing one"""(
+        try:
+            new_player = Player(name=name)
+            self.session.add(new_player)
+            self.session.commit()
+            self.session.refresh(new_player)
+            return new_player
+        except IntegrityError:
+            self.session.rollback()
+            # If name already taken, fetch the existing player
+            return self.get_player_by_name(name)
+
+
+    def get_player_by_name(self):
+        return self.session.query(Player).filter_by(name=names).first()
+
+
+    def start_new_session(self):
+        """Create a new session in the db"""
+        session_obj = SessionModel(start_time=datetime.now().isoformat())
+        self.session.add(session_obj)
+        self.session.commit()
+        self.session.refresh(session_obj)
+        return session_obj
+
+
+
 
     def start_new_session(self):
         start_time = datetime.now().isoformat()
