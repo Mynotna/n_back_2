@@ -1,9 +1,8 @@
 import sqlite3
 import json
 from datetime import datetime
-from tkinter.font import names
 
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from .database import SessionLocal
@@ -16,8 +15,8 @@ class DataManager:
         self.session: Session = SessionLocal()
 
 
-    def add_player(self):
-        """Add a player with a unique name or select an existing one"""(
+    def add_player(self, name: str) -> Player:
+        """Add a player with a unique name or select an existing one"""
         try:
             new_player = Player(name=name)
             self.session.add(new_player)
@@ -30,11 +29,11 @@ class DataManager:
             return self.get_player_by_name(name)
 
 
-    def get_player_by_name(self):
+    def get_player_by_name(self, name: str) -> Player:
         return self.session.query(Player).filter_by(name=names).first()
 
 
-    def start_new_session(self):
+    def start_new_session(self) -> SessionModel:
         """Create a new session in the db"""
         session_obj = SessionModel(start_time=datetime.now().isoformat())
         self.session.add(session_obj)
@@ -42,75 +41,53 @@ class DataManager:
         self.session.refresh(session_obj)
         return session_obj
 
-
-
-
-    def start_new_session(self):
-        start_time = datetime.now().isoformat()
-        self.cursor.execute("INSERT INTO sessions (start_time) VALUES (?)", (start_time,))
-        self.session_id = self.cursor.lastrowid
-        self.conn.commit()
-
-
-    def save_game_event(self,
-                        player_id,
-                        session_id,
-                        game_id,
-                        event_index,
-                        n_back_value,
-                        actual_number,
-                        player_number_response,
-                        number_response_status,
-                        actual_position,
-                        player_position_response,
-                        position_response_status,
-                        position_response_time,
-                        number_response_time
-        ):
-
-        self.cursor.execute('''
-        INSERT INTO game_events (
-        player_id,
-        session_id, 
-        game_id, 
-        event_index, 
-        n_back_value, 
-        actual_number,
-        player_number_response, 
-        number_response_status, 
-        actual_position, 
-        player_position_response,
-        position_response_status,
-        position_response_time,
-        number_response_time
-        ) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''',
-        (
+    def save_game_event(
+            self,
             player_id,
-            self.session_id,
+            session_id,
             game_id,
             event_index,
             n_back_value,
             actual_number,
             player_number_response,
             number_response_status,
-            json.dumps(actual_position),
-            json.dumps(player_position_response),
+            actual_position,
+            player_position_response,
             position_response_status,
             position_response_time,
             number_response_time
-        ))
-        self.conn.commit()
+    ) -> GameEvent:
+
+        """Save a new game event to db"""
+        event = GameEvent(
+            player_id= player_id,
+            session_id= session_id,
+            game_id= game_id,
+            event_index= event_index,
+            n_back_value= n_back_value,
+            actual_number= actual_number,
+            player_number_response= player_number_response,
+            number_response_status= number_response_status,
+            actual_position= json.dumps(actual_position), # convert tuples to json strings
+            player_position_response= json.dumps(player_position_response)
+                if player_position_response else None,
+            position_response_status= position_response_status,
+            position_response_time= position_response_time,
+            number_response_time= number_response_time
+        )
+
+        self.session.add(event)
+        self.session.commit()
+        self.session.refresh()
+        return event
 
     def close(self):
-        self.conn.close()
-
+        self.session.close()
 
 if __name__ == "__main__":
     dm = DataManager()
-    dm.start_new_session()
-    dm.save_game_event(
+    dm.add_player("Doris")
+    dm.start_new_session(
         player_id="dwindler_987",
         session_id=dm.session_id,
         game_id=1,
