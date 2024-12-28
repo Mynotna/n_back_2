@@ -16,11 +16,11 @@ class Player(Base):
     __tablename__ = "players"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(Integer, unique=True, nullable=False)
+    name = Column(String, unique=True, nullable=False)
 
     game_events = relationship("GameEvent", back_populates= "player")
 
-    def __rpr__(self):
+    def __repr__(self):
         return f"<Player(id={self.id}, name='{self.name}')>"
 
 class Session(Base):
@@ -40,19 +40,22 @@ class GameEvent(Base):
     __tablename__ = "game_events"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    player_id = Column(Integer, ForeignKey('sessions.session_id'), nullable=False)
+    # Foreign key connections
+    player_id = Column(Integer, ForeignKey('players_id'), nullable=False)
+    session_id = Column(Integer, ForeignKey("sessions.session_id"), nullable=False)
+
     game_id = Column(Integer, nullable=False)
     event_index = Column(Integer, nullable=False)
     n_back_value = Column(Integer, nullable=False)
     actual_number = Column(Integer, nullable=False)
     player_number_response = Column(Integer)
     number_response_status = Column(
-        String, CheckConstraint("position_response_status IN ('correct', 'incorrect', 'missed')")
+        String, CheckConstraint("number_response_status IN ('correct', 'incorrect', 'missed')")
         )
     actual_position = Column(Text, nullable=False)
     player_position_response =Column(Text)
     position_response_status = Column(
-        String, CheckConstraint("position_response_status IN ('correct, 'incorrect', 'missed')"))
+        String, CheckConstraint("position_response_status IN ('correct', 'incorrect', 'missed')"))
     position_response_time = Column(Float)
     number_response_time = Column(Float)
 

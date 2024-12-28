@@ -66,7 +66,8 @@ class ScoreManager:
        return {'correct': correct_count, 'missed_count': missed_count, 'incorrect': incorrect_count}
 
 
-
+if __name__ == "__main__":
+    print("Hello")
 
 
 

@@ -9,7 +9,6 @@ from .database import SessionLocal
 from .models import Player, Session as SessionModel, GameEvent
 
 
-
 class DataManager:
     def __init__(self):
         self.session: Session = SessionLocal()
@@ -30,8 +29,7 @@ class DataManager:
 
 
     def get_player_by_name(self, name: str) -> Player:
-        return self.session.query(Player).filter_by(name=names).first()
-
+        return self.session.query(Player).filter_by(name=name).first()
 
     def start_new_session(self) -> SessionModel:
         """Create a new session in the db"""
@@ -85,21 +83,4 @@ class DataManager:
         self.session.close()
 
 if __name__ == "__main__":
-    dm = DataManager()
-    dm.add_player("Doris")
-    dm.start_new_session(
-        player_id="dwindler_987",
-        session_id=dm.session_id,
-        game_id=1,
-        event_index=0,
-        n_back_value=2,
-        actual_number=5,
-        player_number_response=1,
-        number_response_status="correct",
-        actual_position=(100, 200),
-        player_position_response=None,
-        position_response_status="missed",
-        position_response_time= 200,
-        number_response_time= 200
-    )
-print("Game event saved successfully.")
+    print("Hello")

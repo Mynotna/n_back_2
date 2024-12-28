@@ -1,8 +1,8 @@
 from sqlalchemy import engine, create_engine
 from sqlalchemy.orm import sessionmaker
-from models import Base
+from database.models import Base
 
-DATABASE_URL = "database/n_back_data.db"
+DATABASE_URL = "sqlite:///database/n_back_data.db"
 
 #Create the engine
 engine = create_engine(DATABASE_URL, echo=False)
