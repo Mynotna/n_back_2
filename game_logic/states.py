@@ -188,8 +188,6 @@ class GamePlayState(State):
         self.generate_new_sequences()
         # self.reset()
 
-
-
         # Initialise player response dictionary
         self.player_responses = {}
 

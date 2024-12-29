@@ -31,7 +31,7 @@ class AnalyticsManager:
                 'position_response_time': ev.position_response_time,
                 'number_response_time': ev.number_response_time
             })
-            return pd.DataFrame(data)
+        return pd.DataFrame(data)
 
-        def close(self):
-            self.dm.close()
+    def close(self):
+        self.dm.close()

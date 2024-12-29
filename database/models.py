@@ -26,14 +26,14 @@ class Player(Base):
 class Session(Base):
     __tablename__ = "sessions"
 
-    session_id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     start_time = Column(String, nullable=False)
 
     # Relationship to game event
     game_events = relationship("GameEvent", back_populates="session")
 
     def __repr__(self):
-        return f"<Session(session_id{self.session_id}, start_time'{self.start_time}')>"
+        return f"<Session(session_id{self.id}, start_time'{self.start_time}')>"
 
 
 class GameEvent(Base):
@@ -41,8 +41,8 @@ class GameEvent(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     # Foreign key connections
-    player_id = Column(Integer, ForeignKey('players_id'), nullable=False)
-    session_id = Column(Integer, ForeignKey("sessions.session_id"), nullable=False)
+    player_id = Column(Integer, ForeignKey('players.id'), nullable=False)
+    session_id = Column(Integer, ForeignKey("sessions.id"), nullable=False)
 
     game_id = Column(Integer, nullable=False)
     event_index = Column(Integer, nullable=False)
@@ -61,7 +61,7 @@ class GameEvent(Base):
 
     # Relationships
     player = relationship("Player", back_populates="game_events")
-    session = relationship("session", back_populates="game_events")
+    session = relationship("Session", back_populates="game_events")
 
     def __repr__(self):
         return (f"<game_event("
