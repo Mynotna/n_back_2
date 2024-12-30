@@ -66,8 +66,8 @@ class DataManager:
             actual_number= actual_number,
             player_number_response= player_number_response,
             number_response_status= number_response_status,
-            actual_position= json.dumps(actual_position), # convert tuples to json strings
-            player_position_response= json.dumps(player_position_response)
+            actual_position= actual_position, # convert tuples to json strings
+            player_position_response= player_position_response
                 if player_position_response else None,
             position_response_status= position_response_status,
             position_response_time= position_response_time,

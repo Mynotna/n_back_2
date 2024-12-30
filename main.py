@@ -4,12 +4,20 @@ from database.data_manager import DataManager
 
 
 def main():
-    from analytics.analytics_manager import AnalyticsManager
+    game = Game()
+    game.run()
 
-    analyzer = AnalyticsManager()
-    df = analyzer.get_game_events()
-    print(df.head())
-    analyzer.close()
+if __name__ == "__main__":
+    main()
+
+
+
+ # from analytics.analytics_manager import AnalyticsManager
+ #
+ #    analyzer = AnalyticsManager()
+ #    df = analyzer.get_game_events()
+ #    print(df.head())
+ #    analyzer.close()
 
 
 # def main():
@@ -45,8 +53,7 @@ def main():
 #
 #     dm.close()
 
-if __name__ == "__main__":
-    main()
+
 
 
 

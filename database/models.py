@@ -2,13 +2,13 @@ from sqlalchemy import (
 Column,
 Integer,
 String,
-Text,
 Float,
 ForeignKey,
+JSON,
 CheckConstraint
 )
 
-from sqlalchemy.orm import relationship,declarative_base
+from sqlalchemy.orm import relationship, declarative_base
 
 Base = declarative_base()
 
@@ -52,8 +52,8 @@ class GameEvent(Base):
     number_response_status = Column(
         String, CheckConstraint("number_response_status IN ('correct', 'incorrect', 'missed')")
         )
-    actual_position = Column(Text, nullable=False)
-    player_position_response =Column(Text)
+    actual_position = Column(JSON, nullable=False)
+    player_position_response =Column(JSON)
     position_response_status = Column(
         String, CheckConstraint("position_response_status IN ('correct', 'incorrect', 'missed')"))
     position_response_time = Column(Float)
@@ -68,8 +68,3 @@ class GameEvent(Base):
                 f"id={self.id}, "
                 f"player_id{self.player_id},"
                 f"session_id{self.session_id})>")
-
-
-
-
-

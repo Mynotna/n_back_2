@@ -24,6 +24,12 @@ class Game:
         self.aggregated_results = {"correct": 0, "missed": 0} # Track overall results
         self.load_states()
 
+    #     Initialise session object/id
+        self.db_session_obj = None
+
+    def set_session_obj(self, session_obj):
+        self.db_session_obj = session_obj
+
     def load_states(self):
         self.states["IntroState"] = IntroState(self)
         self.states["GetReadyState"] = GetReadyState(self)
@@ -78,8 +84,8 @@ class Game:
         pygame.quit()
         sys.exit()
 
-# if __name__=="__main__":
-#     pygame.mixer.init()
-#     pygame.init()
-#     game = Game()
-#     game.run()
+if __name__=="__main__":
+    pygame.mixer.init()
+    pygame.init()
+    game = Game()
+    game.run()
