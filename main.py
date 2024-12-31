@@ -30,12 +30,12 @@ if __name__ == "__main__":
 #
 #     # Start new session
 #     new_session = dm.start_new_session()
-#     print(f"New session started with id: {new_session.session_id}")
+#     print(f"New session started with id: {new_session.round_id}")
 #
 #     # 3. Save a test game event
 #     game_event = dm.save_game_event(
 #         player_id=player.id,
-#         session_id=new_session.session_id,
+#         round_id=new_session.round_id,
 #         game_id=1,
 #         event_index=0,
 #         n_back_value=2,

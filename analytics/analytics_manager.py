@@ -17,7 +17,7 @@ class AnalyticsManager:
             data.append({
                 'id': ev.player_id,
                 'player_id': ev.player_id,
-                'session_id': ev.session_id,
+                'round_id': ev.round_id,
                 'game_id': ev.game_id,
                 'event_index': ev.event_index,
                 'n_back_value': ev.n_back_value,

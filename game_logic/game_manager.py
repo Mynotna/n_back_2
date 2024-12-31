@@ -4,6 +4,7 @@ import sys
 from game_logic.states import IntroState, GamePlayState, GetReadyState, FinishState, GameResultState
 from config.config import WIDTH, HEIGHT
 from game_logic.resource_manager import ResourceManager
+from database.data_manager import DataManager
 
 pygame.mixer.init()
 pygame.init()
@@ -24,11 +25,14 @@ class Game:
         self.aggregated_results = {"correct": 0, "missed": 0} # Track overall results
         self.load_states()
 
-    #     Initialise session object/id
-        self.db_session_obj = None
+        #Initialise session object/id
+        self.round_obj = None
 
-    def set_session_obj(self, session_obj):
-        self.db_session_obj = session_obj
+    def set_session_obj(self, round_obj):
+        self.round_obj = round_obj
+
+    #Initialise DataManager
+        self.data_manager = DataManager()
 
     def load_states(self):
         self.states["IntroState"] = IntroState(self)

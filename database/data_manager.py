@@ -6,13 +6,16 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from .database import SessionLocal
-from .models import Player, Session as SessionModel, GameEvent
-
+from .models import(
+    Player,
+    Round,
+    Game,
+    GameEvent
+)
 
 class DataManager:
     def __init__(self):
-        self.session: Session = SessionLocal()
-
+        self.session: Session = SessionLocal() # This is the ORM obj
 
     def add_player(self, name: str) -> Player:
         """Add a player with a unique name or select an existing one"""
@@ -31,18 +34,31 @@ class DataManager:
     def get_player_by_name(self, name: str) -> Player:
         return self.session.query(Player).filter_by(name=name).first()
 
-    def start_new_session(self) -> SessionModel:
-        """Create a new session in the db"""
-        session_obj = SessionModel(start_time=datetime.now().isoformat())
-        self.session.add(session_obj)
+    def start_new_round(self) -> SessionModel:
+        """Create a new round in the db (equivalent to 10 games)"""
+        round_obj = Round(start_time=datetime.now().isoformat())
+        self.session.add(round_obj)
         self.session.commit()
-        self.session.refresh(session_obj)
-        return session_obj
+        self.session.refresh(round_obj)
+        return round_obj
+
+    def create_game(self, round_id: int, game_index: int, ) -> Game:
+        """
+        Create a new game within a round. There are 10 games per round
+        :param round_id:
+        :param game_index:
+        :return: Game
+        """
+        new_game = Game(round_id=round_id, game_index=game_index)
+        self.session.add(new_game)
+        self.session.commit()
+        self.session.refresh(new_game)
+        return new_game
 
     def save_game_event(
             self,
             player_id,
-            session_id,
+            round_id,
             game_id,
             event_index,
             n_back_value,
@@ -56,17 +72,16 @@ class DataManager:
             number_response_time
     ) -> GameEvent:
 
-        """Save a new game event to db"""
+        """Save a new event in single game event to db"""
         event = GameEvent(
             player_id= player_id,
-            session_id= session_id,
             game_id= game_id,
             event_index= event_index,
             n_back_value= n_back_value,
             actual_number= actual_number,
             player_number_response= player_number_response,
             number_response_status= number_response_status,
-            actual_position= actual_position, # convert tuples to json strings
+            actual_position= actual_position,
             player_position_response= player_position_response
                 if player_position_response else None,
             position_response_status= position_response_status,
@@ -76,7 +91,7 @@ class DataManager:
 
         self.session.add(event)
         self.session.commit()
-        self.session.refresh()
+        self.session.refresh(event)
         return event
 
     def close(self):

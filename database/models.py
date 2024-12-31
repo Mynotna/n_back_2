@@ -23,28 +23,58 @@ class Player(Base):
     def __repr__(self):
         return f"<Player(id={self.id}, name='{self.name}')>"
 
-class Session(Base):
-    __tablename__ = "sessions"
+class Round(Base):
+
+    """A round is a set of 10 games each of which can have many events"""
+    __tablename__ = "rounds"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     start_time = Column(String, nullable=False)
 
     # Relationship to game event
-    game_events = relationship("GameEvent", back_populates="session")
+    game_events = relationship("GameEvent", back_populates="round", cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<Session(session_id{self.id}, start_time'{self.start_time}')>"
+        return f"<Round(id{self.id}, start_time'{self.start_time}')>"
+
+
+    class Game(Base):
+        """Each round has 10 games. This table stores 1 row per game referencing which round it belongs to"""
+
+        __tablename__ = "games"
+
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        round_id = Column(Integer, ForeignKey=("rounds.id"), nullable=False)
+
+        # Track game_number
+        game_index = Column(Integer, nullable=False)
+
+        # Relationship back to round
+        round = relationship("Round", back_populates="games")
+
+        # Each game can have multiple game events
+        game_events = relationship("GameEvent", back_populates="game", cascade="all, delete_orphan")
+
+        def __repr__(self):
+            return f"<Game(id={self.id}, round_id={self.round_id}, game_index={self.game_index})>"
 
 
 class GameEvent(Base):
+    """Each row here represents an event in a single game, such as correct reponse etc"""
+
     __tablename__ = "game_events"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    # Foreign key connections
-    player_id = Column(Integer, ForeignKey('players.id'), nullable=False)
-    session_id = Column(Integer, ForeignKey("sessions.id"), nullable=False)
 
-    game_id = Column(Integer, nullable=False)
+    # Link to player
+    player_id = Column(Integer, ForeignKey('players.id'), nullable=False)
+    # Link to game
+    game_id = Column(Integer, ForeignKey('games_id'), nullable=False)
+
+
+    #Link to round
+    # round_id = Column(Integer, ForeignKey("rounds.id"), nullable=False)
+
     event_index = Column(Integer, nullable=False)
     n_back_value = Column(Integer, nullable=False)
     actual_number = Column(Integer, nullable=False)
@@ -61,10 +91,10 @@ class GameEvent(Base):
 
     # Relationships
     player = relationship("Player", back_populates="game_events")
-    session = relationship("Session", back_populates="game_events")
+    game = relationship("Game", back_populates="game_events")
 
     def __repr__(self):
-        return (f"<game_event("
+        return (f"<GameEvent("
                 f"id={self.id}, "
                 f"player_id{self.player_id},"
-                f"session_id{self.session_id})>")
+                f"game_id{self.game_id})>")

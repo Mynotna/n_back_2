@@ -80,8 +80,6 @@ class IntroState(State):
         if self.game.player_id is None:
             self.game.player_id = ""
 
-        self.data_manager = DataManager()
-
 
     def handle_events(self, events):
         super().handle_events(events)
@@ -103,8 +101,8 @@ class IntroState(State):
                     if self.start_game_btn_rect.collidepoint(event.pos):
                         # Start a new session and gets session id (session_obj)
 
-                        self.session_obj = self.data_manager.start_new_session()
-                        self.game.set_session_obj(self.session_obj)
+                        self.round_obj = self.game.data_manager.start_new_round()
+                        self.game.set_session_obj(self.round_obj)
 
                         self.game.current_state = self.game.states["GetReadyState"]
 
@@ -235,8 +233,8 @@ class GamePlayState(State):
         # Player response time variables
         self.response_times = {}
 
-        # # Start a new session and gets session id (session_obj)
-        # self.current_db_session = self.data_manager.start_new_session()
+        # Start a new session and gets session id (session_obj)
+        self.current_db_session = self.data_manager.start_new_round()
 
 
     def generate_new_sequences(self):
@@ -402,12 +400,9 @@ class GamePlayState(State):
             # Get response times
             pos_response_time, num_response_time = self.response_times.get(i, (None, None))
 
-            # Get player_id
-
-
             self.data_manager.save_game_event(
                 player_id= self.game.player_id,
-                session_id=self.current_db_session.session_id,
+                round_id=self.current_db_session.round_id,
                 game_id= self.game_count,
                 event_index= i,
                 n_back_value= self.random_gen.n,
@@ -422,7 +417,7 @@ class GamePlayState(State):
             )
 
             # Transition to the result state
-        session_results = {
+        round_results = {
             "correct": results["correct"],
             "missed": results["missed_count"]
         }
@@ -430,9 +425,9 @@ class GamePlayState(State):
             #Aggregate results
             aggregated_results = {"correct": results["correct"], "missed": results["missed_count"]}
             session_rank = 1
-            self.game.transition_to_finish_state(session_results)
+            self.game.transition_to_finish_state(round_results)
         else:
-            self.game.transition_to_game_result_state(session_results)
+            self.game.transition_to_game_result_state(round_results)
 
 
     def __del__(self):
@@ -443,7 +438,7 @@ class GamePlayState(State):
 class GameResultState(State):
     def __init__(self, game, session_results):
         super().__init__(game)
-        self.session_results = session_results  # results of the current session
+        self.game_results = game_results  # results of the current game
         self.button_rects = self.create_buttons()
 
     def create_buttons(self):
@@ -470,7 +465,7 @@ class GameResultState(State):
         screen.fill((0, 144, 233))
         font = self.game.resources.fonts["btn_1"]
         # Display session results
-        results_text = f"Results: {self.session_results["correct"]} correct, {self.session_results["missed"]}"
+        results_text = f"Results: {self.game_results["correct"]} correct, {self.game_results["missed"]}"
         results_surf = font.render(results_text, True, (211, 211, 144))
         results_rect = results_surf.get_rect(center= (WIDTH // 2, HEIGHT //3))
         screen.blit(results_surf, results_rect)
@@ -504,7 +499,7 @@ class FinishState(State):
         return {"restart": restart_button, "exit": exit_button}
 
         # Store results
-        self.session_results = None
+        self.game_results = None
         self.aggregated_results = None
 
 
@@ -712,7 +707,7 @@ class FinishState(State):
             self.score_manager = ScoreManager(self.player_responses, self.correct_responses)
 
             # Start new session
-            self.data_manager.start_new_session()
+            self.data_manager.start_new_round()
 
             # Game and session tracking
             self.num_per_game = len(self.correct_responses)
@@ -749,7 +744,7 @@ class FinishState(State):
             self.response_times = {}
 
             # Start a new session
-            self.data_manager.start_new_session()
+            self.data_manager.start_new_round()
 
         def generate_new_sequences(self):
             """Generate new sequences of numbers and coordinates per game"""
@@ -920,7 +915,7 @@ class FinishState(State):
 
                 self.data_manager.save_game_event(
                     player_id=self.game.player_id,
-                    session_id=self.data_manager.session_id,
+                    round_id=self.data_manager.session_id,
                     game_id=self.game_count,
                     event_index=i,
                     n_back_value=self.random_gen.n,
@@ -1011,7 +1006,7 @@ class FinishState(State):
             return {"restart": restart_button, "exit": exit_button}
 
             # Store results
-            self.session_results = None
+            self.game_results = None
             self.aggregated_results = None
 
         def handle_events(self, events):
