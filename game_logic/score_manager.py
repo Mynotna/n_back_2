@@ -50,7 +50,6 @@ class ScoreManager:
            pos_result = self.classify_key(exp_pos, pl_pos)
            num_result = self.classify_key(exp_num, pl_num)
 
-
            # Assign correctness scores: correct = 1, incorrect = 0, missed = 0
            pos_score = 1 if pos_result == 'correct' else 0
            num_score = 1 if num_result == 'correct' else 0
@@ -63,7 +62,7 @@ class ScoreManager:
                    missed_count += 1
                elif result == 'incorrect':
                    incorrect_count += 1
-       return {'correct': correct_count, 'missed_count': missed_count, 'incorrect': incorrect_count}
+       return {'correct': correct_count, 'incorrect': incorrect_count,'missed_count': missed_count}
 
 
 if __name__ == "__main__":

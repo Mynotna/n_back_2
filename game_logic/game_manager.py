@@ -22,17 +22,17 @@ class Game:
         # Initialize states and results tracking
         self.states = {}
         self.current_state = None
-        self.aggregated_results = {"correct": 0, "missed": 0} # Track overall results
+        self.aggregated_results = {"correct": 0, "incorrect": 0, "missed": 0} # Track overall results
         self.load_states()
+
+        # Initialise DataManager
+        self.data_manager = DataManager()
 
         #Initialise session object/id
         self.round_obj = None
 
     def set_session_obj(self, round_obj):
         self.round_obj = round_obj
-
-    #Initialise DataManager
-        self.data_manager = DataManager()
 
     def load_states(self):
         self.states["IntroState"] = IntroState(self)

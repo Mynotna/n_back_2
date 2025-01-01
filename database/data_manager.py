@@ -1,17 +1,16 @@
-import sqlite3
-import json
 from datetime import datetime
 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from .database import SessionLocal
-from .models import(
+from .models import (
     Player,
     Round,
     Game,
     GameEvent
 )
+
 
 class DataManager:
     def __init__(self):
@@ -30,11 +29,10 @@ class DataManager:
             # If name already taken, fetch the existing player
             return self.get_player_by_name(name)
 
-
     def get_player_by_name(self, name: str) -> Player:
         return self.session.query(Player).filter_by(name=name).first()
 
-    def start_new_round(self) -> SessionModel:
+    def start_new_round(self) -> Round:
         """Create a new round in the db (equivalent to 10 games)"""
         round_obj = Round(start_time=datetime.now().isoformat())
         self.session.add(round_obj)
@@ -74,19 +72,19 @@ class DataManager:
 
         """Save a new event in single game event to db"""
         event = GameEvent(
-            player_id= player_id,
-            game_id= game_id,
-            event_index= event_index,
-            n_back_value= n_back_value,
-            actual_number= actual_number,
-            player_number_response= player_number_response,
-            number_response_status= number_response_status,
-            actual_position= actual_position,
-            player_position_response= player_position_response
-                if player_position_response else None,
-            position_response_status= position_response_status,
-            position_response_time= position_response_time,
-            number_response_time= number_response_time
+            player_id=player_id,
+            game_id=game_id,
+            event_index=event_index,
+            n_back_value=n_back_value,
+            actual_number=actual_number,
+            player_number_response=player_number_response,
+            number_response_status=number_response_status,
+            actual_position=actual_position,
+            player_position_response=player_position_response
+            if player_position_response else None,
+            position_response_status=position_response_status,
+            position_response_time=position_response_time,
+            number_response_time=number_response_time
         )
 
         self.session.add(event)
@@ -96,6 +94,7 @@ class DataManager:
 
     def close(self):
         self.session.close()
+
 
 if __name__ == "__main__":
     print("Hello")

@@ -18,7 +18,7 @@ class Player(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, unique=True, nullable=False)
 
-    game_events = relationship("GameEvent", back_populates= "player")
+    game_events = relationship("GameEvent", back_populates="player")
 
     def __repr__(self):
         return f"<Player(id={self.id}, name='{self.name}')>"
@@ -30,6 +30,7 @@ class Round(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     start_time = Column(String, nullable=False)
+    end_time = Column(String, nullable=False)
 
     # Relationship to game event
     game_events = relationship("GameEvent", back_populates="round", cascade="all, delete-orphan")
@@ -38,30 +39,29 @@ class Round(Base):
         return f"<Round(id{self.id}, start_time'{self.start_time}')>"
 
 
-    class Game(Base):
-        """Each round has 10 games. This table stores 1 row per game referencing which round it belongs to"""
+class Game(Base):
+    """Each round has 10 games. This table stores 1 row per game referencing which round it belongs to"""
 
-        __tablename__ = "games"
+    __tablename__ = "games"
 
-        id = Column(Integer, primary_key=True, autoincrement=True)
-        round_id = Column(Integer, ForeignKey=("rounds.id"), nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    round_id = Column(Integer, ForeignKey=("rounds.id"), nullable=False)
 
-        # Track game_number
-        game_index = Column(Integer, nullable=False)
+    # Track game_number
+    game_index = Column(Integer, nullable=False)
 
-        # Relationship back to round
-        round = relationship("Round", back_populates="games")
+    # Relationship back to round
+    round = relationship("Round", back_populates="games")
 
-        # Each game can have multiple game events
-        game_events = relationship("GameEvent", back_populates="game", cascade="all, delete_orphan")
+    # Each game can have multiple game events
+    game_events = relationship("GameEvent", back_populates="game", cascade="all, delete_orphan")
 
-        def __repr__(self):
-            return f"<Game(id={self.id}, round_id={self.round_id}, game_index={self.game_index})>"
+    def __repr__(self):
+        return f"<Game(id={self.id}, round_id={self.round_id}, game_index={self.game_index})>"
 
 
 class GameEvent(Base):
-    """Each row here represents an event in a single game, such as correct reponse etc"""
-
+    """Each row here represents an event in a single game, such as correct response etc"""
     __tablename__ = "game_events"
 
     id = Column(Integer, primary_key=True, autoincrement=True)

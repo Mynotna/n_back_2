@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 class State:
     def __init__(self, game):
         self.game = game
+        self.datamanager = self.game.data_manager
 
     def handle_events(self, events):
         for event in events:
@@ -99,8 +100,8 @@ class IntroState(State):
                     # Start game button event
                 if not self.asking_for_name and not self.show_initial_screen:
                     if self.start_game_btn_rect.collidepoint(event.pos):
-                        # Start a new session and gets session id (session_obj)
 
+                        # Start a new session and gets session id (session_obj)
                         self.round_obj = self.game.data_manager.start_new_round()
                         self.game.set_session_obj(self.round_obj)
 
@@ -115,6 +116,10 @@ class IntroState(State):
             self.game.player_id = updated_text
 
             if done and self.game.player_id.strip():
+                player = self.game.data_manager.add_player(self.game.player_id.strip())
+
+                # Store player name for use by other states if needed
+                self.game.player_id = player.id
                 self.asking_for_name = False
 
 
@@ -177,7 +182,6 @@ class GetReadyState(State):
 
 class GamePlayState(State):
     """Numbers are placed using coordinates
-    Instructions are blitted to the screen as png files
     """
     def __init__(self, game):
         super().__init__(game)
@@ -195,8 +199,7 @@ class GamePlayState(State):
         # Initialise player response dictionary
         self.player_responses = {}
 
-        # Initialise instances DataManager and ScoreManager
-        self.data_manager = DataManager()
+        # Initialise instance of ScoreManager
         self.score_manager = ScoreManager(self.player_responses, self.correct_responses)
 
         # Game and session tracking
@@ -234,7 +237,7 @@ class GamePlayState(State):
         self.response_times = {}
 
         # Start a new session and gets session id (session_obj)
-        self.current_db_session = self.data_manager.start_new_round()
+        self.current_db_session = self.game.data_manager.start_new_round()
 
 
     def generate_new_sequences(self):
@@ -249,6 +252,7 @@ class GamePlayState(State):
         """Reset the game logic for a new round."""
         # Score counting variables
         self.correct_count = 0
+        self.incorrect_count = 0
         self.missed_count = 0
 
         self.num_count = 0
@@ -401,24 +405,25 @@ class GamePlayState(State):
             pos_response_time, num_response_time = self.response_times.get(i, (None, None))
 
             self.data_manager.save_game_event(
-                player_id= self.game.player_id,
+                player_id=self.game.player_id,
                 round_id=self.current_db_session.round_id,
-                game_id= self.game_count,
-                event_index= i,
-                n_back_value= self.random_gen.n,
-                actual_number= event_data["number"],
-                player_number_response= 1 if player_num == "j" else None,
-                number_response_status= num_result,
-                actual_position= event_data["coord"],
-                player_position_response= event_data["coord"] if player_pos == "g" else None,
-                position_response_status= pos_result,
-                position_response_time= pos_response_time,
-                number_response_time= num_response_time
+                game_id=self.game_count,
+                event_index=i,
+                n_back_value=self.random_gen.n,
+                actual_number=event_data["number"],
+                player_number_response=1 if player_num == "j" else None,
+                number_response_status=num_result,
+                actual_position=event_data["coord"],
+                player_position_response=event_data["coord"] if player_pos == "g" else None,
+                position_response_status=pos_result,
+                position_response_time=pos_response_time,
+                number_response_time=num_response_time
             )
 
             # Transition to the result state
         round_results = {
             "correct": results["correct"],
+            "incorrect": results["incorrect"],
             "missed": results["missed_count"]
         }
         if self.game_count >= self.games_per_session:
