@@ -16,6 +16,9 @@ class Game:
         self.running = True
         self.clock = pygame.time.Clock()
 
+        # Initialise DataManager
+        self.data_manager = DataManager()
+
         # Initialise player id
         self.player_id = None
 
@@ -24,9 +27,6 @@ class Game:
         self.current_state = None
         self.aggregated_results = {"correct": 0, "incorrect": 0, "missed": 0} # Track overall results
         self.load_states()
-
-        # Initialise DataManager
-        self.data_manager = DataManager()
 
         #Initialise session object/id
         self.round_obj = None

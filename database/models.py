@@ -25,18 +25,18 @@ class Player(Base):
 
 class Round(Base):
 
-    """A round is a set of 10 games each of which can have many events"""
+    """A round is a set of games each of which can have many events"""
     __tablename__ = "rounds"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     start_time = Column(String, nullable=False)
-    end_time = Column(String, nullable=False)
+    # end_time = Column(String, nullable=False)
 
     # Relationship to game event
-    game_events = relationship("GameEvent", back_populates="round", cascade="all, delete-orphan")
+    games = relationship("Game", back_populates="round", cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<Round(id{self.id}, start_time'{self.start_time}')>"
+        return f"<Round(id{self.id}, start_time {self.start_time})>"
 
 
 class Game(Base):
@@ -45,16 +45,14 @@ class Game(Base):
     __tablename__ = "games"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    round_id = Column(Integer, ForeignKey=("rounds.id"), nullable=False)
-
-    # Track game_number
+    round_id = Column(Integer, ForeignKey("rounds.id"), nullable=False)
     game_index = Column(Integer, nullable=False)
 
     # Relationship back to round
     round = relationship("Round", back_populates="games")
 
     # Each game can have multiple game events
-    game_events = relationship("GameEvent", back_populates="game", cascade="all, delete_orphan")
+    game_events = relationship("GameEvent", back_populates="game", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Game(id={self.id}, round_id={self.round_id}, game_index={self.game_index})>"
@@ -69,7 +67,7 @@ class GameEvent(Base):
     # Link to player
     player_id = Column(Integer, ForeignKey('players.id'), nullable=False)
     # Link to game
-    game_id = Column(Integer, ForeignKey('games_id'), nullable=False)
+    game_id = Column(Integer, ForeignKey('games.id'), nullable=False)
 
 
     #Link to round

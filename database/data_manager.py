@@ -56,7 +56,6 @@ class DataManager:
     def save_game_event(
             self,
             player_id,
-            round_id,
             game_id,
             event_index,
             n_back_value,
