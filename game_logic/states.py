@@ -221,9 +221,9 @@ class GamePlayState(State):
         # Initialise instance of ScoreManager
         self.score_manager = ScoreManager(self.player_responses, self.correct_responses)
 
-        # Game and session tracking
+        # Game and session tracking. Round = 10 games. Num_per_gane depends upon variable length of 'correct_responses
         self.num_per_game = len(self.correct_responses)
-        self.games_per_session = 10
+        self.games_per_round = 10
         self.game_count = 0
 
         # Timing and display
@@ -255,8 +255,8 @@ class GamePlayState(State):
         # Player response time variables
         self.response_times = {}
 
-        # Start a new session and gets session id (session_obj)
-        self.current_db_session = self.game.data_manager.start_new_round()
+        # Start a new ORM session and gets session_obj)
+        self.current_round_orm_session = self.game.data_manager.start_new_round()
 
 
     def generate_new_sequences(self):
@@ -276,7 +276,7 @@ class GamePlayState(State):
 
         self.num_count = 0
         self.num_per_game = 10
-        self.games_per_session = 10
+        self.games_per_round = 10
 
         self.current_number = None
         self.current_coord = None
@@ -321,7 +321,7 @@ class GamePlayState(State):
                             if event.key == pygame.K_j:
                                 # j pressed for number
                                 self.player_responses[current_event_index] = (None, 'j')
-                                # Get response time for jg
+                                # Get response time for j
                                 response_time_ms = pygame.time.get_ticks() - self.event_start_time
                                 number_response_time_sec = response_time_ms / 1000.0
                                 logger.info(f"j pressed: {current_event_index}/n Response time: {number_response_time_sec} ")
@@ -407,21 +407,21 @@ class GamePlayState(State):
 
 
     def end_game(self):
-        """calculate results and transition to GameResultState"""
-        results = self.score_manager.evaluate_score()
+        """calculate results and transition to GameResultState or FinishState"""
+        game_results = self.score_manager.evaluate_score()
+        logger.info(f"R   e    s    u   l   t   s for game: {game_results}")
 
         # save each event to the database now results are known
         logger.info(f"Correct responses: {self.correct_responses}")
+
         for i, event_data in self.correct_responses.items():
             # event_data contains {"number", "coord", "expected_position_key", "expected_number_key"}
             player_pos, player_num = self.player_responses.get(i, (None, None))
 
-            # Classify correctness for number and position
-            pos_result = self.score_manager.classify_key(event_data["expected_position_key"], player_pos)
-            num_result = self.score_manager.classify_key(event_data["expected_number_key"], player_num)
-
             # Get response times
             pos_response_time, num_response_time = self.response_times.get(i, (None, None))
+
+            
 
             self.data_manager.save_game_event(
                 player_id=self.game.player_id,
@@ -439,18 +439,22 @@ class GamePlayState(State):
             )
 
             # Transition to the result state
-        round_results = {
+        game_results = {
             "correct": results["correct"],
             "incorrect": results["incorrect"],
             "missed": results["missed_count"]
         }
-        if self.game_count >= self.games_per_session:
-            #Aggregate results
-            aggregated_results = {"correct": results["correct"], "missed": results["missed_count"]}
-            session_rank = 1
-            self.game.transition_to_finish_state(round_results)
+        if self.game_count >= self.games_per_round:
+            #Round results (aggregated game results
+            round_results = {
+                "correct": results["correct"],
+                "incorrect": results["incorrect"],
+                "missed": results["missed_count"]}
+            rank = 1
+
+            self.game.transition_to_finish_state(game_results)
         else:
-            self.game.transition_to_game_result_state(round_results)
+            self.game.transition_to_game_result_state(game_results)
 
 
     def __del__(self):
@@ -523,7 +527,7 @@ class FinishState(State):
 
         # Store results
         self.game_results = None
-        self.aggregated_results = None
+        self.round_results = None
 
 
     def handle_events(self, events):
@@ -1030,7 +1034,7 @@ class FinishState(State):
 
             # Store results
             self.game_results = None
-            self.aggregated_results = None
+            self.round_results = None
 
         def handle_events(self, events):
             super().handle_events(events)
@@ -1591,7 +1595,7 @@ class FinishState(State):
 
         # Store results
         self.game_results = None
-        self.aggregated_results = None
+        self.round_results = None
 
 
     def handle_events(self, events):
@@ -2098,7 +2102,7 @@ class FinishState(State):
 
             # Store results
             self.game_results = None
-            self.aggregated_results = None
+            self.round_results = None
 
         def handle_events(self, events):
             super().handle_events(events)

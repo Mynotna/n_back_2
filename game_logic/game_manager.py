@@ -25,7 +25,7 @@ class Game:
         # Initialize states and results tracking
         self.states = {}
         self.current_state = None
-        self.aggregated_results = {"correct": 0, "incorrect": 0, "missed": 0} # Track overall results
+        self.round_results = {"correct": 0, "incorrect": 0, "missed": 0} # Track overall results
         self.load_states()
 
         #Initialise session object/id
@@ -44,7 +44,7 @@ class Game:
 
     def reset_session(self):
         """ Reset the game session to start over"""
-        self.aggregated_results = {"correct": 0, "missed": 0}
+        self.round_results = {"correct": 0, "missed": 0}
 
         # Reset all states
         self.load_states()
@@ -55,14 +55,15 @@ class Game:
 
     def transition_to_game_result_state(self, session_results):
         """
-                Transition to GameResultState after a game session ends.
+                Transition to GameResultState after a round ends.
                 Updates aggregated results and creates a new GameResultState instance.
                 """
-        self.aggregated_results["correct"] += session_results["correct"]
-        self.aggregated_results["missed"] += session_results["missed"]
+        self.round_results["correct"] += game_results["correct"]
+        self.round_results["incorrect"] += game_results["incorrect"]
+        self.round_results["missed"] += game_results["missed"]
 
         # Create a new GameResultState and transition it
-        self.states["GameResultState"] = GameResultState(self, session_results)
+        self.states["GameResultState"] = GameResultState(self, round_results)
         self.current_state = self.states["GameResultState"]
 
 
@@ -70,9 +71,9 @@ class Game:
         """Transition to FinishState where all results are displayed
         Included aggregated results"""
 
-        session_rank = f"Rank #{len(self.aggregated_results)}"
+        rank = f"Rank #{len(self.round_results)}"
         # Create a new Finish state and transition to it
-        self.states["FinishState"] = FinishState(self, self.aggregated_results, session_rank)
+        self.states["FinishState"] = FinishState(self, self.round_results, rank)
         self.current_state = self.states["FinishState"]
 
 
