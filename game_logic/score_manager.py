@@ -32,6 +32,8 @@ class ScoreManager:
             return 'missed'
         else:
             return 'incorrect'
+
+
     def evaluate_score(self):
        """This evaluates the player's score by comparing two dictionaries, one from the GamePlayState (player_responses),
        the other from RandomGenerator (correct_responses).
@@ -49,6 +51,7 @@ class ScoreManager:
 
            pos_result = self.classify_key(exp_pos, pl_pos)
            num_result = self.classify_key(exp_num, pl_num)
+           return pos_result, num_result
 
            # Assign correctness scores: correct = 1, incorrect = 0, missed = 0
            pos_score = 1 if pos_result == 'correct' else 0

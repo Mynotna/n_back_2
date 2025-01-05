@@ -407,7 +407,12 @@ class GamePlayState(State):
 
 
     def end_game(self):
-        """calculate results and transition to GameResultState or FinishState"""
+        """Calls ScoreManger to calculate results:
+        Returns dict with a count of: correct, incorrect, missed
+
+        Calls save_game_event to store data for each game
+         """
+
         game_results = self.score_manager.evaluate_score()
         logger.info(f"R   e    s    u   l   t   s for game: {game_results}")
 
