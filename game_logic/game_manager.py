@@ -53,9 +53,9 @@ class Game:
         self.current_state = self.states["IntroState"]
 
 
-    def transition_to_game_result_state(self, game_results):
+    def transition_to_game_result_state(self, game_results, aggregate_results):
         """
-                Transition to GameResultState after a round ends.
+                Transition to GameResultState after a game ends.
                 Updates aggregated results and creates a new GameResultState instance.
                 """
         self.round_results["correct"] += game_results["correct"]
@@ -63,11 +63,11 @@ class Game:
         self.round_results["missed"] += game_results["missed"]
 
         # Create a new GameResultState and transition it
-        self.states["GameResultState"] = GameResultState(self, round_results)
+        self.states["GameResultState"] = GameResultState(self, game_results, aggregate_results)
         self.current_state = self.states["GameResultState"]
 
 
-    def transition_to_finish_state(self, session_results):
+    def transition_to_finish_state(self, game_results, aggregate_results):
         """Transition to FinishState where all results are displayed
         Included aggregated results"""
 
