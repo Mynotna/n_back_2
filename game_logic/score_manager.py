@@ -89,6 +89,7 @@ class ScoreManager:
 
         # Aggregate the results
         self.aggregate_scores(game_results)
+        print(f"Pos score: {pos_score}/nNum score: {num_score}/nGame results: {game_results}")
 
         return event_results, game_results
 
