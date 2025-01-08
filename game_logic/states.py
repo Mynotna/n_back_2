@@ -167,7 +167,6 @@ class IntroState(State):
 
             name_text = self.enter_name_font.render(self.game.player_id, True, (255, 255, 255))
             screen.blit(name_text, (prompt_text.get_width() + 60, 510))
-            logger.info(f"Name text: {name_text}: Player_id: {self.game.player_id}")
             return
 
         if not self.show_instructions:
@@ -219,7 +218,7 @@ class GamePlayState(State):
         self.player_responses = {}
 
         # Initialise instance of ScoreManager
-        self.score_manager = ScoreManager(self.player_responses, self.correct_responses)
+        self.score_manager = ScoreManager(self.player_responses, self.correct_responses,self.n_back_value)
 
         # Game and session tracking. Round = 10 games. Num_per_gane depends upon variable length of 'correct_responses
         self.num_per_game = len(self.correct_responses)
@@ -492,7 +491,10 @@ class GameResultState(State):
         screen.fill((0, 144, 233))
         font = self.game.resources.fonts["btn_1"]
         # Display session results
-        results_text = f"Results: {self.game_results["correct"]} correct, {self.game_results["missed"]}"
+        results_text = (f"Correct: {self.game_results["correct"]}   "
+                        f"Incorrect: {self.game_results["incorrect"]}  "
+                        f"Missed: {self.game_results["missed"]}  ")
+
         results_surf = font.render(results_text, True, (211, 211, 144))
         results_rect = results_surf.get_rect(center= (WIDTH // 2, HEIGHT //3))
         screen.blit(results_surf, results_rect)

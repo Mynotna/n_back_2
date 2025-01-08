@@ -1,7 +1,7 @@
 import json
 
 class ScoreManager:
-    def __init__(self, player_responses, correct_responses):
+    def __init__(self, player_responses, correct_responses, n):
 
         """The ScoreManager receives a dictionary (self.player_responses) from GamePlayState,
         and a correct_responses dictionary from RandomGenerator class and compares the two. It also gives numerical
@@ -15,6 +15,8 @@ class ScoreManager:
         ditto
         }
         """
+        self.n = n
+
         # Initialise player_responses dictionary from GamePlayState class
         self.player_responses = player_responses
         # Initialise correct_responses dictionary from Random_gen class
@@ -52,6 +54,7 @@ class ScoreManager:
         correct_count = 0
         missed_count = 0
         incorrect_count = 0
+        penalty = -1
 
         # Dictionary to store correct/incorrect values to pass to game_events table via end_game method in GamePlayState
         event_results = {}
@@ -74,8 +77,13 @@ class ScoreManager:
             pos_score = 1 if pos_result == 'correct' else 0
             num_score = 1 if num_result == 'correct' else 0
             total_score = pos_score + num_score
-
             correct_count += total_score  # Accumulate correct scores
+
+            if i < self.n:
+                if pos_result == "incorrect" or num_result == "incorrect":
+                    total_score += penalty
+                else:
+                    correct_count += total_score
 
             # Count missed and incorrect responses
             for result in [pos_result, num_result]:

@@ -22,7 +22,7 @@ class RandomGenerator:
         self.n = n
         self.max_number = (n * 7)
         if self.n >= 8 or self.n < 2:
-            raise ValueError(f"N-back needs to be between 2 and 8 Genius")
+            raise ValueError(f"N-back needs to be between 2 and 8, Genius")
 
         self.n_back_max_number = self.max_number - self.n
 
@@ -110,8 +110,8 @@ class RandomGenerator:
     def generate_correct_responses(self, n_back_num_list, n_back_coord_list, n_back):
 
         """ Returns a dictionary of expected correct responses for easy comparison to player_responses:
-        where expected_position_key is 'g' if position is a repeat, else None;
-        and expected_number_key is 'j' if number is a repeat, else None.
+        where expected_position_key is 'g' if position is a n_back repeat, else None;
+        and expected_number_key is 'j' if number is a n_backrepeat, else None.
         """
         correct_responses = {}
 
@@ -132,7 +132,6 @@ class RandomGenerator:
                 "expected_position_key": expected_position_key,
                 "expected_number_key": expected_number_key
             }
-
         return correct_responses
 
 
