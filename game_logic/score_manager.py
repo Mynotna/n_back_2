@@ -80,12 +80,12 @@ class ScoreManager:
             correct_count += total_score  # Accumulate correct scores
 
             if i < self.n:
-                if pos_result == "incorrect" or num_result == "incorrect":
+                if pos_result == "incorrect" or num_result == "incorrect" or pos_result == "missed" or num_result == "missed":
                     total_score += penalty
                 else:
                     correct_count += total_score
 
-            # Count missed and incorrect responses
+            # Count missed and incorrect responses for penalties
             for result in [pos_result, num_result]:
                 if result == 'missed':
                     missed_count += 1
@@ -98,6 +98,7 @@ class ScoreManager:
         # Aggregate the results
         self.aggregate_scores(game_results)
         print(f"Pos score: {pos_score}/nNum score: {num_score}/nGame results: {game_results}")
+        print(f"Event_results: {event_results}")
 
         return event_results, game_results
 
