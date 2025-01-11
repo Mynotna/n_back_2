@@ -411,10 +411,10 @@ class GamePlayState(State):
         Calls save_game_event to store data for each game
          """
         # Get correct/incorrect results  for player_responses
-        event_results, game_results = self.score_manager.evaluate_game_score()
-        for i, event_result in event_results.items():
-            pos_result = event_result["pos_result"]
-            num_result = event_result["num_result"]
+        game_results, event_results = self.score_manager.evaluate_game_score()
+        for i, event_result in event_results.iterrows():
+            pos_result = event_result["position_result"]
+            num_result = event_result["number_result"]
 
         logger.info(f"R   e    s    u   l   t   s for game: Game results: {game_results}/nEvent results: {event_results}")
 
