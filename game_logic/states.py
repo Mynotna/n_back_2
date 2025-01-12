@@ -465,6 +465,7 @@ class GameResultState(State):
     def __init__(self, game, game_results, aggregate_results):
         super().__init__(game)
         self.game_results = game_results  # results of the current game
+        self.aggregate_results = aggregate_results
         self.button_rects = self.create_buttons()
 
     def create_buttons(self):
@@ -484,7 +485,7 @@ class GameResultState(State):
                     self.game.current_state = self.game.states["GamePlayState"]
                 elif self.button_rects["exit"].collidepoint(event.pos):
                     # End the session
-                    self.game.transition_to_finish_state()
+                    self.game.transition_to_finish_state(self.game_results, self.aggregate_results)
 
 
     def render(self, screen):
@@ -542,3 +543,9 @@ class FinishState(State):
                     self.game.current_state = self.game.states["IntroState"]
                 elif self.button_rects["exit"].collidepoint(event.pos):
                     self.game.running = False
+
+
+    def render(self, screen):
+        screen.fill((0, 194, 123))
+        font = self.game.resources.fonts["btn_1"]
+

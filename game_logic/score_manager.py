@@ -84,7 +84,7 @@ class ScoreManager:
             df["num_score"] = df["number_result"].apply(lambda x: 1 if x == "correct" else 0)
 
             #Calculate total score for position and number
-            df["total_score"] = df["pos_score"] + df ["num_score"]
+            df["total_score"] = df["pos_score"] + df["num_score"]
 
             #Penalise incorrect key presses in first n items
             df.loc[df["index"] < self.n, "total_score"] += df["position_result"].isin(["incorrect", "missed"]).astype(int) * -1
@@ -99,11 +99,12 @@ class ScoreManager:
             #Prepare game results for return
             game_results = {"correct": correct_count, "incorrect": incorrect_count, "missed": missed_count}
 
-            #Aggregate scores across games for a session
-            self.aggregate_scores(game_results)
+            #Aggregate scores across games for a round
+            aggregate_score = self.aggregate_scores(game_results)
 
             print(f"Game results: {game_results}")
             print(f"Event results:\n{df}")
+            print(f"Aggregate scores: {aggregate_score}")
 
         return game_results, df
 
