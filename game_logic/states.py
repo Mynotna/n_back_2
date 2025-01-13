@@ -515,12 +515,12 @@ class GameResultState(State):
 
 
 class FinishState(State):
-    def __init__(self, game, aggregated_results, session_rank):
+    def __init__(self, game, game_results, aggregated_results):
         super().__init__(game)
         self.aggregated_results = aggregated_results
-        self.session_rank = session_rank
+        self.game_results = game_results
         self.button_rects = self.create_buttons()
-
+        font = self.game.resources.fonts["btn_1"]
 
     def create_buttons(self):
         """Create Play again and Exit buttons"""
@@ -529,9 +529,8 @@ class FinishState(State):
         return {"restart": restart_button, "exit": exit_button}
 
         # Store results
-        self.game_results = None
-        self.round_results = None
-
+        # self.game_results = None
+        # self.round_results = None
 
     def handle_events(self, events):
         super().handle_events(events)
@@ -544,8 +543,122 @@ class FinishState(State):
                 elif self.button_rects["exit"].collidepoint(event.pos):
                     self.game.running = False
 
-
     def render(self, screen):
-        screen.fill((0, 194, 123))
+        screen.fill((0, 144, 233))
         font = self.game.resources.fonts["btn_1"]
+
+        results_text = (f"Correct: {self.game_results["correct"]}   "
+                        f"Incorrect: {self.game_results["incorrect"]}  "
+                        f"Missed: {self.game_results["missed"]}  ")
+
+        results_surf = font.render(results_text, True, (211, 211, 144))
+        results_rect = results_surf.get_rect(center=(WIDTH // 2, HEIGHT // 3))
+        screen.blit(results_surf, results_rect)
+
+        # Draw next_game and exit buttons
+        pygame.draw.rect(screen, (111, 211, 211), self.button_rects["restart"])
+        pygame.draw.rect(screen, (111, 212, 211), self.button_rects["exit"])
+
+    class GameResultState(State):
+        def __init__(self, game, game_results, aggregate_results):
+            super().__init__(game)
+            self.game_results = game_results  # results of the current game
+            self.aggregate_results = aggregate_results
+            self.button_rects = self.create_buttons()
+
+        def create_buttons(self):
+            """Create the buttons for Next Game and exit"""
+            next_game_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 50, 200, 50)
+            exit_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 120, 200, 50)
+            return {"next_game": next_game_button, "exit": exit_button}
+
+        def handle_events(self, events):
+            super().handle_events(events)
+            for event in events:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.button_rects["next_game"].collidepoint(event.pos):
+                        # Start the next game
+                        self.game.states["GamePlayState"].reset()
+                        self.game.current_state = self.game.states["GamePlayState"]
+                    elif self.button_rects["exit"].collidepoint(event.pos):
+                        # End the session
+                        self.game.transition_to_finish_state(self.game_results, self.aggregate_results)
+
+        def render(self, screen):
+            screen.fill((0, 144, 233))
+            font = self.game.resources.fonts["btn_1"]
+            # Display session results
+            results_text = (f"Correct: {self.game_results["correct"]}   "
+                            f"Incorrect: {self.game_results["incorrect"]}  "
+                            f"Missed: {self.game_results["missed"]}  ")
+
+            results_surf = font.render(results_text, True, (211, 211, 144))
+            results_rect = results_surf.get_rect(center=(WIDTH // 2, HEIGHT // 3))
+            screen.blit(results_surf, results_rect)
+
+            # Draw next_game and exit buttons
+            pygame.draw.rect(screen, (111, 211, 211), self.button_rects["next_game"])
+            pygame.draw.rect(screen, (111, 212, 211), self.button_rects["exit"])
+
+            # Render button text
+            next_game_text = font.render("Next game?", True, (89, 89, 21))
+            next_game_rect = next_game_text.get_rect(center=self.button_rects["next_game"].center)
+            screen.blit(next_game_text, next_game_rect)
+
+            exit_text = font.render("Exit?", True, (89, 89, 21))
+            exit_text_rect = exit_text.get_rect(center=self.button_rects["exit"].center)
+            screen.blit(exit_text, exit_text_rect)
+
+        class FinishState(State):
+            def __init__(self, game, game_results, aggregate_results):
+                super().__init__(game)
+                self.aggregate_results = aggregate_results
+                self.game_results = game_results
+                self.button_rects = self.create_buttons()
+                font = self.game.resources.fonts["btn_1"]
+
+            def create_buttons(self):
+                """Create Play again and Exit buttons"""
+                restart_button = pygame.Rect((WIDTH // 2 - 100, HEIGHT // 2 + 50, 200, 50))
+                exit_button = pygame.Rect((WIDTH // 2 - 100, HEIGHT // 2 + 120, 200, 50))
+                return {"restart": restart_button, "exit": exit_button}
+
+            def handle_events(self, events):
+                super().handle_events(events)
+                for event in events:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if self.button_rects["restart"].collidepoint(event.pos):
+                            # Reset entire session
+                            self.game.reset_session()
+                            self.game.current_state = self.game.states["IntroState"]
+                        elif self.button_rects["exit"].collidepoint(event.pos):
+                            self.game.running = False
+
+            def render(self, screen):
+                screen.fill((0, 144, 233))
+                font = self.game.resources.fonts["btn_1"]
+
+                game_results_text = (f"Correct: {self.game_results["correct"]}   "
+                                f"Incorrect: {self.game_results["incorrect"]}  "
+                                f"Missed: {self.game_results["missed"]}  ")
+
+                game_results_surf = font.render(game_results_text, True, (211, 211, 144))
+                game_results_rect = game_results_surf.get_rect(center=(WIDTH // 2, HEIGHT // 3))
+                screen.blit(game_results_surf, game_results_rect)
+
+                # Render button text
+                next_round_text = font.render("Another round?", True, (89, 89, 21))
+                next_round_rect = next_round_text.get_rect(center=self.button_rects["restart"].center)
+                screen.blit(next_round_text, next_round_rect)
+
+                exit_text = font.render("Exit?", True, (89, 89, 21))
+                exit_text_rect = exit_text.get_rect(center=self.button_rects["exit"].center)
+                screen.blit(exit_text, exit_text_rect)
+
+                # Draw next_game and exit buttons
+                pygame.draw.rect(screen, (111, 211, 211), self.button_rects["restart"])
+                pygame.draw.rect(screen, (111, 212, 211), self.button_rects["exit"])
+
+
+
 

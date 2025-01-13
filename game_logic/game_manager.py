@@ -44,7 +44,7 @@ class Game:
 
     def reset_session(self):
         """ Reset the game session to start over"""
-        self.round_results = {"correct": 0, "missed": 0}
+        self.round_results = {"correct": 0, "incorrect": 0, "missed": 0}
 
         # Reset all states
         self.load_states()
@@ -62,7 +62,7 @@ class Game:
         self.round_results["incorrect"] += game_results["incorrect"]
         self.round_results["missed"] += game_results["missed"]
 
-        # Create a new GameResultState and transition it
+        # Create a new GameResultState and transition to it
         self.states["GameResultState"] = GameResultState(self, game_results, aggregate_results)
         self.current_state = self.states["GameResultState"]
 
@@ -73,7 +73,11 @@ class Game:
 
         rank = f"Rank #{len(self.round_results)}"
         # Create a new Finish state and transition to it
-        self.states["FinishState"] = FinishState(self, self.round_results, rank)
+
+        # Reset round results
+
+
+        self.states["FinishState"] = FinishState(self, game_results, rank)
         self.current_state = self.states["FinishState"]
 
 
