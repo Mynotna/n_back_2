@@ -20,7 +20,7 @@ class Game:
         self.data_manager = DataManager()
 
         # Initialise player id
-        self.player_id = None
+        self.player_id = ""
 
         # Initialize states and results tracking
         self.states = {}

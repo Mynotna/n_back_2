@@ -13,15 +13,16 @@ from sqlalchemy.orm import relationship, declarative_base
 Base = declarative_base()
 
 class Player(Base):
+
     __tablename__ = "players"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    player_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, unique=True, nullable=False)
 
     game_events = relationship("GameEvent", back_populates="player")
 
     def __repr__(self):
-        return f"<Player(id={self.id}, name='{self.name}')>"
+        return f"<Player(player_id={self.player_id}, name='{self.name}')>"
 
 class Round(Base):
 
@@ -36,7 +37,7 @@ class Round(Base):
     games = relationship("Game", back_populates="round", cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<Round(id{self.id}, start_time {self.start_time})>"
+        return f"<Round(id={self.id}, start_time {self.start_time})>"
 
 
 class Game(Base):
@@ -65,13 +66,13 @@ class GameEvent(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     # Link to player
-    player_id = Column(Integer, ForeignKey('players.id'), nullable=False)
+    player_id = Column(Integer, ForeignKey('players.player_id'), nullable=False)
     # Link to game
     game_id = Column(Integer, ForeignKey('games.id'), nullable=False)
 
 
     #Link to round
-    # round_id = Column(Integer, ForeignKey("rounds.id"), nullable=False)
+    # round_id = Column(Integer, ForeignKey("rounds.player_id"), nullable=False)
 
     event_index = Column(Integer, nullable=False)
     n_back_value = Column(Integer, nullable=False)
