@@ -1,21 +1,3 @@
-import pygame
-import pygame.time
-import pygame.mixer
-from utils.handle_text_input import handle_text_input
-import logging
-
-from database.data_manager import DataManager
-from game_logic.random_gen import RandomGenerator
-from game_logic.score_manager import ScoreManager
-
-from game_logic.resource_manager import ResourceManager
-
-from config.config import WIDTH, HEIGHT, COLOR
-
-# configure logger
-logging.basicConfig(level= logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
-
 
 class State:import pygame
 import pygame.time
@@ -34,7 +16,6 @@ from config.config import WIDTH, HEIGHT, COLOR
 # configure logger
 logging.basicConfig(level= logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
-
 
 class State:
     def __init__(self, game):
@@ -96,9 +77,11 @@ class IntroState(State):
         self.show_initial_screen = True
         self.asking_for_name = False
 
-        # Initialise Player id
-        if self.game.player_id is None:
-            self.game.player_id = ""
+        # Initialise Player name
+        if self.game.player_name is None:
+            self.game.player_name = ""
+
+
 
 
     def handle_events(self, events):
@@ -131,14 +114,15 @@ class IntroState(State):
                         self.show_instructions = not self.show_instructions
 
         if self.asking_for_name:
-            updated_text, done = handle_text_input(events, self.game.player_id)
-            self.game.player_id = updated_text
+            updated_text, done = handle_text_input(events, self.game.player_name)
+            self.game.player_name = updated_text
 
-            if done and self.game.player_id.strip():
-                player = self.game.data_manager.add_player(self.game.player_id.strip())
+            if done and self.game.player_name.strip():
+                player = self.game.data_manager.add_player(self.game.player_name.strip())
 
                 # Store player name for use by other states if needed
-                self.game.player_id = player.id
+                self.game.player_name = player.name
+                self.game.player_id = player.player_id
                 self.asking_for_name = False
 
 
@@ -165,7 +149,7 @@ class IntroState(State):
             prompt_text = self.enter_name_font.render("Type your name and hit enter : ", True, (255, 255, 255))
             screen.blit(prompt_text, (50, 510))
 
-            name_text = self.enter_name_font.render(self.game.player_id, True, (255, 255, 255))
+            name_text = self.enter_name_font.render(self.game.player_name, True, (255, 255, 255))
             screen.blit(name_text, (prompt_text.get_width() + 60, 510))
             return
 
@@ -254,7 +238,7 @@ class GamePlayState(State):
         # Player response time variables
         self.response_times = {}
 
-        # Start a new ORM session and gets session_obj)
+        # Starts a new ORM session and gets session_obj)
         self.current_round_orm_session = self.game.data_manager.start_new_round()
 
 
@@ -448,20 +432,6 @@ class GamePlayState(State):
                     position_response_time=pos_response_time,
                     number_response_time=num_response_time
                 )
-            self.data_manager.save_game_event(
-                player_id=self.game.player_id,
-                game_id=self.game_count,
-                event_index=i,
-                n_back_value=self.random_gen.n,
-                actual_number=event_data["number"],
-                player_number_response=1 if player_num == "j" else None,
-                number_response_status=num_result,
-                actual_position=event_data["coord"],
-                player_position_response=event_data["coord"] if player_pos == "g" else None,
-                position_response_status=pos_result,
-                position_response_time=pos_response_time,
-                number_response_time=num_response_time
-            )
 
             # Transition to the result state
         if self.game_count >= self.games_per_round:
@@ -570,7 +540,6 @@ class FinishState(State):
         game_results_surf = font.render(game_results_text, True, (211, 211, 144))
         game_results_rect = game_results_surf.get_rect(center=(WIDTH // 2, HEIGHT // 3))
         screen.blit(game_results_surf, game_results_rect)
-
 
         # Get button rects
         buttons = self.create_buttons()
