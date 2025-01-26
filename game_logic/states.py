@@ -530,7 +530,6 @@ class FinishState(State):
 
     def render(self, screen):
         screen.fill((0, 144, 233))
-        print(f"Finish State is being rendered")
         font = self.game.resources.fonts["btn_1"]
 
         game_results_text = (f"Correct: {self.game_results['correct']}   "
